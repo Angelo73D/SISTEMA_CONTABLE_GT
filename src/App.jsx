@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { FileText, Users, Wallet, RefreshCw, PlusCircle } from 'lucide-react';
+import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('nomina');
   const [empleados, setEmpleados] = useState([]);
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mostrarAsiento, setMostrarAsiento] = useState(false);
 
   // Estado para el formulario de Caja Chica
   const [nuevoGasto, setNuevoGasto] = useState({
@@ -70,7 +71,7 @@ export default function App() {
     setGuardandoGasto(false);
   };
 
-  // Cálculo de planilla según leyes de Guatemala (IGSS Laboral 4.83% + Bonificación Ley Q250.00)
+  // Cálculo de planilla individual (IGSS Laboral 4.83% + Bonificación Ley Q250.00)
   const calcularNomina = (emp) => {
     const sueldoBase = Number(emp.salario_base) || 0;
     const bonifLey = Number(emp.bonificacion_ley) || 250.00;
@@ -78,6 +79,26 @@ export default function App() {
     const liquido = (sueldoBase + bonifLey) - igssLaboral;
     return { sueldoBase, bonifLey, igssLaboral, liquido };
   };
+
+  // Cálculos globales para la planilla y el asiento contable
+  const resumenPlanilla = empleados.reduce(
+    (acc, emp) => {
+      const { sueldoBase, bonifLey, igssLaboral, liquido } = calcularNomina(emp);
+      const cuotaPatronal = sueldoBase * 0.1267; // 10.67% IGSS + 1% IRTRA + 1% INTECAP
+      
+      return {
+        totalSueldos: acc.totalSueldos + sueldoBase,
+        totalBonificacion: acc.totalBonificacion + bonifLey,
+        totalIgssLaboral: acc.totalIgssLaboral + igssLaboral,
+        totalCuotaPatronal: acc.totalCuotaPatronal + cuotaPatronal,
+        totalLiquido: acc.totalLiquido + liquido
+      };
+    },
+    { totalSueldos: 0, totalBonificacion: 0, totalIgssLaboral: 0, totalCuotaPatronal: 0, totalLiquido: 0 }
+  );
+
+  const totalDebe = resumenPlanilla.totalSueldos + resumenPlanilla.totalBonificacion + resumenPlanilla.totalCuotaPatronal;
+  const totalHaber = resumenPlanilla.totalIgssLaboral + resumenPlanilla.totalCuotaPatronal + resumenPlanilla.totalLiquido;
 
   // Total acumulado en Caja Chica
   const totalCajaChica = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
@@ -136,11 +157,86 @@ export default function App() {
         {/* MÓDULO 1: NÓMINA GUATEMALA */}
         {activeTab === 'nomina' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800">Planilla de Sueldos y Salarios</h2>
-              <p className="text-sm text-slate-500">Cálculos automáticos con IGSS Laboral (4.83%) y Bonificación Incentivo</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Planilla de Sueldos y Salarios</h2>
+                <p className="text-sm text-slate-500">Cálculos automáticos con IGSS Laboral (4.83%) y Bonificación Incentivo</p>
+              </div>
+              <button
+                onClick={() => setMostrarAsiento(!mostrarAsiento)}
+                className="bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-400/30 font-semibold px-4 py-2.5 rounded-lg flex items-center space-x-2 text-sm shadow-sm transition"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>{mostrarAsiento ? 'Ocultar Asiento Contable' : 'Generar Asiento (Libro Diario)'}</span>
+                {mostrarAsiento ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
             </div>
 
+            {/* SECCIÓN DESPLEGABLE: ASIENTO CONTABLE */}
+            {mostrarAsiento && (
+              <div className="bg-slate-900 text-white rounded-xl shadow-lg p-6 border border-slate-800 space-y-4 animate-fadeIn">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                  <div>
+                    <h3 className="font-bold text-amber-400 text-base">Partida N° X — Libro Diario (Sueldos del Mes)</h3>
+                    <p className="text-xs text-slate-400">Registro automático de sueldos, bonificaciones y cargas patronales</p>
+                  </div>
+                  <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/20">
+                    Cuadrado / Balanceado
+                  </span>
+                </div>
+
+                <table className="w-full text-sm font-mono">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400 text-left text-xs uppercase">
+                      <th className="py-2">Código / Cuentas Contables</th>
+                      <th className="py-2 text-right">Debe (Q)</th>
+                      <th className="py-2 text-right">Haber (Q)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50 text-slate-300">
+                    <tr>
+                      <td className="py-2.5">Sueldos y Salarios (Gasto)</td>
+                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalSueldos.toFixed(2)}</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5">Bonificación Incentivo Decreto 37-2001 (Gasto)</td>
+                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalBonificacion.toFixed(2)}</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5">Cuotas Patronales IGSS / IRTRA / INTECAP (12.67%)</td>
+                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pl-6 text-slate-400">a Retentiones IGSS Laboral por Pagar (4.83%)</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalIgssLaboral.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pl-6 text-slate-400">a Cuotas Patronales por Pagar (12.67%)</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pl-6 text-slate-400">a Bancos / Sueldos por Pagar (Líquido)</td>
+                      <td className="py-2.5 text-right text-slate-600">—</td>
+                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalLiquido.toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-700 font-bold text-amber-400 text-sm">
+                      <td className="py-3 uppercase font-sans">Sumas Iguales</td>
+                      <td className="py-3 text-right">Q {totalDebe.toFixed(2)}</td>
+                      <td className="py-3 text-right">Q {totalHaber.toFixed(2)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+
+            {/* TABLA DE PLANILLA */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
