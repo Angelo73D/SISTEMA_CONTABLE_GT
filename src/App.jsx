@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode } from 'lucide-react';
+import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('nomina');
+  const [activeTab, setActiveTab] = useState('sat'); // Cambiado a SAT para pruebas
   const [empleados, setEmpleados] = useState([]);
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarAsiento, setMostrarAsiento] = useState(false);
 
-  // Estado para el formulario de Caja Chica
+  // Estado para Caja Chica
   const [nuevoGasto, setNuevoGasto] = useState({
     fecha: new Date().toISOString().split('T')[0],
     concepto: '',
@@ -22,8 +22,10 @@ export default function App() {
   // Estado para Módulo SAT (DTE XML)
   const [facturasXML, setFacturasXML] = useState([]);
   const [procesandoXML, setProcesandoXML] = useState(false);
+  const [guardandoSAT, setGuardandoSAT] = useState(false);
+  const [mensajeSAT, setMensajeSAT] = useState('');
 
-  // Cargar datos reales desde Supabase
+  // Cargar datos desde Supabase
   useEffect(() => {
     fetchData();
   }, []);
@@ -32,23 +34,41 @@ export default function App() {
     setLoading(true);
     
     // Obtener empleados
-    const { data: empData, error: empError } = await supabase.from('empleados').select('*');
-    if (!empError) setEmpleados(empData || []);
+    const { data: empData } = await supabase.from('empleados').select('*');
+    if (empData) setEmpleados(empData);
 
     // Obtener gastos de caja chica
-    const { data: cajaData, error: cajaError } = await supabase.from('caja_chica').select('*');
-    if (!cajaError) setGastos(cajaData || []);
+    const { data: cajaData } = await supabase.from('caja_chica').select('*');
+    if (cajaData) setGastos(cajaData);
+
+    // Obtener facturas SAT guardadas
+    const { data: satData } = await supabase.from('facturas_sat').select('*').order('fecha', { ascending: false });
+    if (satData) {
+      const facturasFormateadas = satData.map(f => ({
+        id: f.id,
+        uuid: f.uuid,
+        serie: f.serie,
+        numero: f.numero,
+        fecha: f.fecha,
+        emisorNit: f.emisor_nit,
+        emisorNombre: f.emisor_nombre,
+        base: Number(f.base),
+        iva: Number(f.iva),
+        total: Number(f.total),
+        guardado: true
+      }));
+      setFacturasXML(facturasFormateadas);
+    }
 
     setLoading(false);
   };
 
-  // Guardar nuevo gasto en Supabase
+  // Guardar gasto de caja chica
   const handleGuardarGasto = async (e) => {
     e.preventDefault();
     if (!nuevoGasto.concepto || !nuevoGasto.monto) return;
 
     setGuardandoGasto(true);
-
     const { data, error } = await supabase.from('caja_chica').insert([
       {
         fecha: nuevoGasto.fecha,
@@ -68,19 +88,17 @@ export default function App() {
         responsable: '',
         monto: ''
       });
-    } else {
-      console.error("Error al guardar gasto:", error);
     }
-
     setGuardandoGasto(false);
   };
 
-  // PARSER DE ARCHIVOS XML DE LA SAT
+  // PARSER ROBUSTO DE ARCHIVOS XML DE LA SAT (FEL)
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     if (!files.length) return;
 
     setProcesandoXML(true);
+    setMensajeSAT('');
     const nuevasFacturas = [];
 
     for (const file of files) {
@@ -91,32 +109,44 @@ export default function App() {
       const xmlDoc = parser.parseFromString(text, 'text/xml');
 
       try {
-        // Extracción con Namespace DTE o fallback
         const getElementValue = (tagName) => {
           const el = xmlDoc.getElementsByTagName(tagName)[0] || xmlDoc.getElementsByTagName(`dte:${tagName}`)[0];
-          return el ? el.textContent : '';
+          return el ? el.textContent.trim() : '';
         };
 
-        const getAttributeValue = (tagName, attr) => {
+        const getAttr = (tagName, attrName) => {
           const el = xmlDoc.getElementsByTagName(tagName)[0] || xmlDoc.getElementsByTagName(`dte:${tagName}`)[0];
-          return el ? el.getAttribute(attr) : '';
+          return el ? (el.getAttribute(attrName) || el.getAttribute(attrName.toLowerCase()) || '') : '';
         };
+
+        // Extracción flexible de UUID, Serie y Número
+        const numAutEl = xmlDoc.getElementsByTagName('NumeroAutorizacion')[0] || xmlDoc.getElementsByTagName('dte:NumeroAutorizacion')[0];
+        const datosEmisionEl = xmlDoc.getElementsByTagName('DatosEmision')[0] || xmlDoc.getElementsByTagName('dte:DatosEmision')[0];
 
         const uuid = getElementValue('NumeroAutorizacion') || getElementValue('Autorizacion') || 'N/A';
-        const serie = getAttributeValue('DatosEmision', 'Serie') || getAttributeValue('DTE', 'Serie') || 'N/A';
-        const numero = getAttributeValue('DatosEmision', 'Numero') || getAttributeValue('DTE', 'Numero') || 'N/A';
-        const fechaHora = getAttributeValue('DatosEmision', 'FechaHoraEmision') || new Date().toISOString();
+        
+        const serie = (numAutEl ? numAutEl.getAttribute('Serie') : '') || 
+                      (datosEmisionEl ? datosEmisionEl.getAttribute('Serie') : '') || 
+                      getAttr('DTE', 'Serie') || 'N/A';
+
+        const numero = (numAutEl ? numAutEl.getAttribute('Numero') : '') || 
+                       (datosEmisionEl ? datosEmisionEl.getAttribute('Numero') : '') || 
+                       getAttr('DTE', 'Numero') || 'N/A';
+
+        const fechaHora = getAttr('DatosEmision', 'FechaHoraEmision') || getAttr('DTE', 'FechaHoraEmision') || new Date().toISOString();
         const fecha = fechaHora.split('T')[0];
 
-        const emisorNit = getAttributeValue('Emisor', 'NITEmisor') || getAttributeValue('Emisor', 'NIT') || 'N/A';
-        const emisorNombre = getAttributeValue('Emisor', 'NombreEmisor') || getAttributeValue('Emisor', 'Nombre') || 'Proveedor Desconocido';
+        // Extracción de Emisor
+        const emisorNit = getAttr('Emisor', 'NITEmisor') || getAttr('Emisor', 'NIT') || 'N/A';
+        const emisorNombre = getAttr('Emisor', 'NombreEmisor') || getAttr('Emisor', 'Nombre') || 'Proveedor Desconocido';
 
+        // Extracción de Montos
         const totalStr = getElementValue('MontoTotal') || getElementValue('GranTotal') || '0';
         const total = parseFloat(totalStr) || 0;
         
-        // Cálculo de IVA e Importe Neto en Guatemala (12%)
-        const base = total / 1.12;
-        const iva = total - base;
+        // Cálculo IVA (Guatemala 12%)
+        const base = Math.round((total / 1.12) * 100) / 100;
+        const iva = Math.round((total - base) * 100) / 100;
 
         nuevasFacturas.push({
           id: Math.random().toString(36).substr(2, 9),
@@ -129,18 +159,57 @@ export default function App() {
           base,
           iva,
           total,
-          nombreArchivo: file.name
+          guardado: false
         });
       } catch (err) {
-        console.error("Error al procesar el archivo XML:", file.name, err);
+        console.error("Error al procesar el XML:", file.name, err);
       }
     }
 
-    setFacturasXML((prev) => [...prev, ...nuevasFacturas]);
+    // Filtrar facturas duplicadas ya presentes en la lista por UUID
+    setFacturasXML(prev => {
+      const uuidsExistentes = new Set(prev.map(f => f.uuid));
+      const unicas = nuevasFacturas.filter(f => !uuidsExistentes.has(f.uuid));
+      return [...prev, ...unicas];
+    });
+
     setProcesandoXML(false);
   };
 
-  // Cálculo de planilla individual
+  // Guardar facturas pendientes en Supabase
+  const handleGuardarFacturasSAT = async () => {
+    const pendientes = facturasXML.filter(f => !f.guardado);
+    if (!pendientes.length) return;
+
+    setGuardandoSAT(true);
+    setMensajeSAT('');
+
+    const registros = pendientes.map(f => ({
+      uuid: f.uuid,
+      serie: f.serie,
+      numero: f.numero,
+      fecha: f.fecha,
+      emisor_nit: f.emisorNit,
+      emisor_nombre: f.emisorNombre,
+      base: f.base,
+      iva: f.iva,
+      total: f.total
+    }));
+
+    const { error } = await supabase.from('facturas_sat').upsert(registros, { onConflict: 'uuid' });
+
+    if (!error) {
+      setMensajeSAT('¡Facturas guardadas con éxito en Supabase!');
+      setFacturasXML(prev => prev.map(f => ({ ...f, guardado: true })));
+    } else {
+      console.error("Error al guardar en Supabase:", error);
+      setMensajeSAT('Error al guardar. Revisa que la tabla "facturas_sat" exista en Supabase.');
+    }
+
+    setGuardandoSAT(false);
+  };
+
+  // Cálculos de Nómina
   const calcularNomina = (emp) => {
     const sueldoBase = Number(emp.salario_base) || 0;
     const bonifLey = Number(emp.bonificacion_ley) || 250.00;
@@ -149,12 +218,10 @@ export default function App() {
     return { sueldoBase, bonifLey, igssLaboral, liquido };
   };
 
-  // Cálculos globales para la planilla y el asiento contable
   const resumenPlanilla = empleados.reduce(
     (acc, emp) => {
       const { sueldoBase, bonifLey, igssLaboral, liquido } = calcularNomina(emp);
       const cuotaPatronal = sueldoBase * 0.1267;
-      
       return {
         totalSueldos: acc.totalSueldos + sueldoBase,
         totalBonificacion: acc.totalBonificacion + bonifLey,
@@ -173,6 +240,7 @@ export default function App() {
   const totalCajaChica = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
   const totalFacturasSAT = facturasXML.reduce((acc, f) => acc + f.total, 0);
   const totalIvaSAT = facturasXML.reduce((acc, f) => acc + f.iva, 0);
+  const facturasPendientesCount = facturasXML.filter(f => !f.guardado).length;
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans">
@@ -469,17 +537,34 @@ export default function App() {
                 <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
                 <p className="text-sm text-slate-500">Carga tus DTEs en XML para desglosar el IVA Crédito Fiscal (12%)</p>
               </div>
-              <div className="flex space-x-4">
-                <div className="bg-white border border-slate-200 p-4 rounded-xl text-right shadow-sm">
+              <div className="flex space-x-3 items-center">
+                <div className="bg-white border border-slate-200 p-3.5 rounded-xl text-right shadow-sm">
                   <p className="text-xs text-slate-500 font-medium">Crédito Fiscal (IVA 12%)</p>
                   <p className="text-xl font-bold font-mono text-emerald-600">Q {totalIvaSAT.toFixed(2)}</p>
                 </div>
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-right">
+                <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-right">
                   <p className="text-xs text-amber-800 font-medium">Total Facturas</p>
                   <p className="text-xl font-bold font-mono text-amber-950">Q {totalFacturasSAT.toFixed(2)}</p>
                 </div>
+                {facturasPendientesCount > 0 && (
+                  <button
+                    onClick={handleGuardarFacturasSAT}
+                    disabled={guardandoSAT}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3.5 rounded-xl flex items-center space-x-2 text-sm shadow-sm transition disabled:opacity-50"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{guardandoSAT ? 'Guardando...' : `Guardar en Supabase (${facturasPendientesCount})`}</span>
+                  </button>
+                )}
               </div>
             </div>
+
+            {mensajeSAT && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-4 py-3 rounded-lg flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>{mensajeSAT}</span>
+              </div>
+            )}
 
             {/* Zona de Carga de Archivos */}
             <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 bg-white rounded-xl p-8 text-center transition cursor-pointer relative shadow-sm">
@@ -512,6 +597,7 @@ export default function App() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
                   <tr>
+                    <th className="p-4">Estado</th>
                     <th className="p-4">Fecha / Serie-Número</th>
                     <th className="p-4">Emisor (Proveedor)</th>
                     <th className="p-4">NIT</th>
@@ -522,7 +608,19 @@ export default function App() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {facturasXML.map((fac) => (
-                    <tr key={fac.id} className="hover:bg-slate-50">
+                    <tr key={fac.id || fac.uuid} className="hover:bg-slate-50">
+                      <td className="p-4">
+                        {fac.guardado ? (
+                          <span className="inline-flex items-center text-xs text-emerald-700 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Guardado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-xs text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                            Pendiente
+                          </span>
+                        )}
+                      </td>
                       <td className="p-4">
                         <div className="font-semibold text-slate-900">{fac.fecha}</div>
                         <div className="text-xs font-mono text-slate-500">{fac.serie} - {fac.numero}</div>
@@ -539,7 +637,7 @@ export default function App() {
                   ))}
                   {facturasXML.length === 0 && (
                     <tr>
-                      <td colSpan="6" className="p-8 text-center text-slate-400">
+                      <td colSpan="7" className="p-8 text-center text-slate-400">
                         <FileCode className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         No has cargado ninguna factura XML de la SAT todavía.
                       </td>
