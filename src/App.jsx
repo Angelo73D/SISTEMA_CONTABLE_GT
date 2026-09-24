@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save } from 'lucide-react';
+import { 
+  FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, 
+  ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save, Building2, UserPlus 
+} from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('sat'); // Cambiado a SAT para pruebas
+  const [activeTab, setActiveTab] = useState('sat');
+  
+  // Estado para Clientes / Empresas (Multi-tenant)
+  const [clientes, setClientes] = useState([]);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [mostrarModalCliente, setMostrarModalCliente] = useState(false);
+  const [nuevoCliente, setNuevoCliente] = useState({ nit: '', razon_social: '', nombre_comercial: '' });
+  const [guardandoCliente, setGuardandoCliente] = useState(false);
+
+  // Estados del sistema contable
   const [empleados, setEmpleados] = useState([]);
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,24 +37,47 @@ export default function App() {
   const [guardandoSAT, setGuardandoSAT] = useState(false);
   const [mensajeSAT, setMensajeSAT] = useState('');
 
-  // Cargar datos desde Supabase
+  // 1. Cargar Clientes al iniciar
   useEffect(() => {
-    fetchData();
+    fetchClientes();
   }, []);
 
-  const fetchData = async () => {
+  // 2. Cargar datos del cliente seleccionado cuando cambia el selector
+  useEffect(() => {
+    if (clienteSeleccionado) {
+      fetchDataCliente(clienteSeleccionado.id);
+    }
+  }, [clienteSeleccionado]);
+
+  const fetchClientes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('clientes').select('*').order('razon_social', { ascending: true });
+    if (!error && data && data.length > 0) {
+      setClientes(data);
+      setClienteSeleccionado(data[0]);
+    } else {
+      setLoading(false);
+    }
+  };
+
+  const fetchDataCliente = async (clienteId) => {
     setLoading(true);
     
-    // Obtener empleados
+    // Cargar Empleados del cliente
     const { data: empData } = await supabase.from('empleados').select('*');
     if (empData) setEmpleados(empData);
 
-    // Obtener gastos de caja chica
+    // Cargar Gastos de Caja Chica
     const { data: cajaData } = await supabase.from('caja_chica').select('*');
     if (cajaData) setGastos(cajaData);
 
-    // Obtener facturas SAT guardadas
-    const { data: satData } = await supabase.from('facturas_sat').select('*').order('fecha', { ascending: false });
+    // Cargar Facturas SAT filtradas por cliente_id
+    const { data: satData } = await supabase
+      .from('facturas_sat')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false });
+
     if (satData) {
       const facturasFormateadas = satData.map(f => ({
         id: f.id,
@@ -58,9 +93,37 @@ export default function App() {
         guardado: true
       }));
       setFacturasXML(facturasFormateadas);
+    } else {
+      setFacturasXML([]);
     }
 
     setLoading(false);
+  };
+
+  // Crear nuevo cliente en Supabase
+  const handleCrearCliente = async (e) => {
+    e.preventDefault();
+    if (!nuevoCliente.nit || !nuevoCliente.razon_social) return;
+
+    setGuardandoCliente(true);
+    const { data, error } = await supabase
+      .from('clientes')
+      .insert([{
+        nit: nuevoCliente.nit.trim(),
+        razon_social: nuevoCliente.razon_social.trim(),
+        nombre_comercial: nuevoCliente.nombre_comercial.trim() || nuevoCliente.razon_social.trim()
+      }])
+      .select();
+
+    if (!error && data && data.length > 0) {
+      setClientes([...clientes, data[0]]);
+      setClienteSeleccionado(data[0]);
+      setNuevoCliente({ nit: '', razon_social: '', nombre_comercial: '' });
+      setMostrarModalCliente(false);
+    } else {
+      alert("Error al guardar cliente. Verifica que el NIT no esté duplicado.");
+    }
+    setGuardandoCliente(false);
   };
 
   // Guardar gasto de caja chica
@@ -119,7 +182,6 @@ export default function App() {
           return el ? (el.getAttribute(attrName) || el.getAttribute(attrName.toLowerCase()) || '') : '';
         };
 
-        // Extracción flexible de UUID, Serie y Número
         const numAutEl = xmlDoc.getElementsByTagName('NumeroAutorizacion')[0] || xmlDoc.getElementsByTagName('dte:NumeroAutorizacion')[0];
         const datosEmisionEl = xmlDoc.getElementsByTagName('DatosEmision')[0] || xmlDoc.getElementsByTagName('dte:DatosEmision')[0];
 
@@ -136,15 +198,12 @@ export default function App() {
         const fechaHora = getAttr('DatosEmision', 'FechaHoraEmision') || getAttr('DTE', 'FechaHoraEmision') || new Date().toISOString();
         const fecha = fechaHora.split('T')[0];
 
-        // Extracción de Emisor
         const emisorNit = getAttr('Emisor', 'NITEmisor') || getAttr('Emisor', 'NIT') || 'N/A';
         const emisorNombre = getAttr('Emisor', 'NombreEmisor') || getAttr('Emisor', 'Nombre') || 'Proveedor Desconocido';
 
-        // Extracción de Montos
         const totalStr = getElementValue('MontoTotal') || getElementValue('GranTotal') || '0';
         const total = parseFloat(totalStr) || 0;
         
-        // Cálculo IVA (Guatemala 12%)
         const base = Math.round((total / 1.12) * 100) / 100;
         const iva = Math.round((total - base) * 100) / 100;
 
@@ -166,7 +225,6 @@ export default function App() {
       }
     }
 
-    // Filtrar facturas duplicadas ya presentes en la lista por UUID
     setFacturasXML(prev => {
       const uuidsExistentes = new Set(prev.map(f => f.uuid));
       const unicas = nuevasFacturas.filter(f => !uuidsExistentes.has(f.uuid));
@@ -176,8 +234,13 @@ export default function App() {
     setProcesandoXML(false);
   };
 
-  // Guardar facturas pendientes en Supabase
+  // Guardar facturas asignadas al cliente seleccionado en Supabase
   const handleGuardarFacturasSAT = async () => {
+    if (!clienteSeleccionado) {
+      alert("Debes seleccionar o crear un cliente antes de guardar.");
+      return;
+    }
+
     const pendientes = facturasXML.filter(f => !f.guardado);
     if (!pendientes.length) return;
 
@@ -185,6 +248,7 @@ export default function App() {
     setMensajeSAT('');
 
     const registros = pendientes.map(f => ({
+      cliente_id: clienteSeleccionado.id, // VINCULADO AL CLIENTE ACTIVO
       uuid: f.uuid,
       serie: f.serie,
       numero: f.numero,
@@ -199,11 +263,11 @@ export default function App() {
     const { error } = await supabase.from('facturas_sat').upsert(registros, { onConflict: 'uuid' });
 
     if (!error) {
-      setMensajeSAT('¡Facturas guardadas con éxito en Supabase!');
+      setMensajeSAT(`¡Facturas guardadas con éxito para ${clienteSeleccionado.razon_social}!`);
       setFacturasXML(prev => prev.map(f => ({ ...f, guardado: true })));
     } else {
       console.error("Error al guardar en Supabase:", error);
-      setMensajeSAT('Error al guardar. Revisa que la tabla "facturas_sat" exista en Supabase.');
+      setMensajeSAT('Error al guardar. Revisa la consola o los permisos de Supabase.');
     }
 
     setGuardandoSAT(false);
@@ -236,7 +300,7 @@ export default function App() {
   const totalDebe = resumenPlanilla.totalSueldos + resumenPlanilla.totalBonificacion + resumenPlanilla.totalCuotaPatronal;
   const totalHaber = resumenPlanilla.totalIgssLaboral + resumenPlanilla.totalCuotaPatronal + resumenPlanilla.totalLiquido;
 
-  // Totales de Caja Chica y SAT
+  // Totales
   const totalCajaChica = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
   const totalFacturasSAT = facturasXML.reduce((acc, f) => acc + f.total, 0);
   const totalIvaSAT = facturasXML.reduce((acc, f) => acc + f.iva, 0);
@@ -281,7 +345,7 @@ export default function App() {
         </nav>
         <div className="p-4 border-t border-slate-800">
           <button 
-            onClick={fetchData}
+            onClick={() => clienteSeleccionado && fetchDataCliente(clienteSeleccionado.id)}
             className="w-full flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs text-slate-300"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -291,365 +355,469 @@ export default function App() {
       </aside>
 
       {/* Área Principal */}
-      <main className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 flex flex-col overflow-hidden">
         
-        {/* MÓDULO 1: NÓMINA GUATEMALA */}
-        {activeTab === 'nomina' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Planilla de Sueldos y Salarios</h2>
-                <p className="text-sm text-slate-500">Cálculos automáticos con IGSS Laboral (4.83%) y Bonificación Incentivo</p>
-              </div>
-              <button
-                onClick={() => setMostrarAsiento(!mostrarAsiento)}
-                className="bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-400/30 font-semibold px-4 py-2.5 rounded-lg flex items-center space-x-2 text-sm shadow-sm transition"
+        {/* BARRA SUPERIOR (TOPBAR): SELECTOR GLOBAL DE CLIENTE */}
+        <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shadow-sm">
+          <div className="flex items-center space-x-4">
+            <Building2 className="w-6 h-6 text-amber-500" />
+            <div>
+              <p className="text-xs text-slate-400 font-semibold uppercase">Cliente / Empresa Activa</p>
+              <select
+                value={clienteSeleccionado?.id || ''}
+                onChange={(e) => {
+                  const sel = clientes.find(c => c.id === e.target.value);
+                  setClienteSeleccionado(sel);
+                }}
+                className="bg-slate-50 border border-slate-300 font-bold text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <BookOpen className="w-4 h-4" />
-                <span>{mostrarAsiento ? 'Ocultar Asiento Contable' : 'Generar Asiento (Libro Diario)'}</span>
-                {mostrarAsiento ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
+                {clientes.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.razon_social} (NIT: {c.nit})
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
 
-            {/* SECCIÓN DESPLEGABLE: ASIENTO CONTABLE */}
-            {mostrarAsiento && (
-              <div className="bg-slate-900 text-white rounded-xl shadow-lg p-6 border border-slate-800 space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <div>
-                    <h3 className="font-bold text-amber-400 text-base">Partida N° X — Libro Diario (Sueldos del Mes)</h3>
-                    <p className="text-xs text-slate-400">Registro automático de sueldos, bonificaciones y cargas patronales</p>
-                  </div>
-                  <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/20">
-                    Cuadrado / Balanceado
-                  </span>
+          <button
+            onClick={() => setMostrarModalCliente(true)}
+            className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold px-3 py-2 rounded-lg flex items-center space-x-2 text-xs transition"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>+ Agregar Cliente</span>
+          </button>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-8">
+          
+          {/* MÓDULO 1: NÓMINA GUATEMALA */}
+          {activeTab === 'nomina' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Planilla de Sueldos y Salarios</h2>
+                  <p className="text-sm text-slate-500">
+                    Empresa: <strong className="text-slate-800">{clienteSeleccionado?.razon_social}</strong> (NIT: {clienteSeleccionado?.nit})
+                  </p>
                 </div>
+                <button
+                  onClick={() => setMostrarAsiento(!mostrarAsiento)}
+                  className="bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-400/30 font-semibold px-4 py-2.5 rounded-lg flex items-center space-x-2 text-sm shadow-sm transition"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>{mostrarAsiento ? 'Ocultar Asiento Contable' : 'Generar Asiento (Libro Diario)'}</span>
+                  {mostrarAsiento ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
 
-                <table className="w-full text-sm font-mono">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 text-left text-xs uppercase">
-                      <th className="py-2">Código / Cuentas Contables</th>
-                      <th className="py-2 text-right">Debe (Q)</th>
-                      <th className="py-2 text-right">Haber (Q)</th>
+              {/* ASIENTO CONTABLE */}
+              {mostrarAsiento && (
+                <div className="bg-slate-900 text-white rounded-xl shadow-lg p-6 border border-slate-800 space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div>
+                      <h3 className="font-bold text-amber-400 text-base">Partida N° X — Libro Diario (Sueldos del Mes)</h3>
+                      <p className="text-xs text-slate-400">Registro de sueldos, bonificaciones y cargas patronales</p>
+                    </div>
+                    <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/20">
+                      Cuadrado / Balanceado
+                    </span>
+                  </div>
+
+                  <table className="w-full text-sm font-mono">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 text-left text-xs uppercase">
+                        <th className="py-2">Código / Cuentas Contables</th>
+                        <th className="py-2 text-right">Debe (Q)</th>
+                        <th className="py-2 text-right">Haber (Q)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/50 text-slate-300">
+                      <tr>
+                        <td className="py-2.5">Sueldos y Salarios (Gasto)</td>
+                        <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalSueldos.toFixed(2)}</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5">Bonificación Incentivo Decreto 37-2001 (Gasto)</td>
+                        <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalBonificacion.toFixed(2)}</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5">Cuotas Patronales IGSS / IRTRA / INTECAP (12.67%)</td>
+                        <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 pl-6 text-slate-400">a Retenciones IGSS Laboral por Pagar (4.83%)</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                        <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalIgssLaboral.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 pl-6 text-slate-400">a Cuotas Patronales por Pagar (12.67%)</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                        <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 pl-6 text-slate-400">a Bancos / Sueldos por Pagar (Líquido)</td>
+                        <td className="py-2.5 text-right text-slate-600">—</td>
+                        <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalLiquido.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-slate-700 font-bold text-amber-400 text-sm">
+                        <td className="py-3 uppercase font-sans">Sumas Iguales</td>
+                        <td className="py-3 text-right">Q {totalDebe.toFixed(2)}</td>
+                        <td className="py-3 text-right">Q {totalHaber.toFixed(2)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+
+              {/* TABLA DE PLANILLA */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
+                    <tr>
+                      <th className="p-4">Empleado / DPI</th>
+                      <th className="p-4">Puesto</th>
+                      <th className="p-4">Salario Base</th>
+                      <th className="p-4">Bonif. Ley (Q250)</th>
+                      <th className="p-4">IGSS Laboral (4.83%)</th>
+                      <th className="p-4">Líquido a Recibir</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/50 text-slate-300">
-                    <tr>
-                      <td className="py-2.5">Sueldos y Salarios (Gasto)</td>
-                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalSueldos.toFixed(2)}</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5">Bonificación Incentivo Decreto 37-2001 (Gasto)</td>
-                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalBonificacion.toFixed(2)}</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5">Cuotas Patronales IGSS / IRTRA / INTECAP (12.67%)</td>
-                      <td className="py-2.5 text-right font-bold text-slate-100">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5 pl-6 text-slate-400">a Retenciones IGSS Laboral por Pagar (4.83%)</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalIgssLaboral.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5 pl-6 text-slate-400">a Cuotas Patronales por Pagar (12.67%)</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalCuotaPatronal.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2.5 pl-6 text-slate-400">a Bancos / Sueldos por Pagar (Líquido)</td>
-                      <td className="py-2.5 text-right text-slate-600">—</td>
-                      <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalLiquido.toFixed(2)}</td>
-                    </tr>
+                  <tbody className="divide-y divide-slate-100">
+                    {empleados.map((emp) => {
+                      const { sueldoBase, bonifLey, igssLaboral, liquido } = calcularNomina(emp);
+                      return (
+                        <tr key={emp.id} className="hover:bg-slate-50">
+                          <td className="p-4">
+                            <div className="font-semibold text-slate-900">{emp.nombre || emp.nombre_completo}</div>
+                            {emp.dpi && <div className="text-xs text-slate-400">DPI: {emp.dpi}</div>}
+                          </td>
+                          <td className="p-4 text-slate-600">{emp.puesto}</td>
+                          <td className="p-4 font-mono">Q {sueldoBase.toFixed(2)}</td>
+                          <td className="p-4 font-mono text-emerald-600">+ Q {bonifLey.toFixed(2)}</td>
+                          <td className="p-4 font-mono text-rose-600">- Q {igssLaboral.toFixed(2)}</td>
+                          <td className="p-4 font-mono font-bold text-slate-900">Q {liquido.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                    {empleados.length === 0 && !loading && (
+                      <tr>
+                        <td colSpan="6" className="p-6 text-center text-slate-400">No hay empleados registrados para este cliente.</td>
+                      </tr>
+                    )}
                   </tbody>
-                  <tfoot>
-                    <tr className="border-t-2 border-slate-700 font-bold text-amber-400 text-sm">
-                      <td className="py-3 uppercase font-sans">Sumas Iguales</td>
-                      <td className="py-3 text-right">Q {totalDebe.toFixed(2)}</td>
-                      <td className="py-3 text-right">Q {totalHaber.toFixed(2)}</td>
-                    </tr>
-                  </tfoot>
                 </table>
               </div>
-            )}
-
-            {/* TABLA DE PLANILLA */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
-                  <tr>
-                    <th className="p-4">Empleado / DPI</th>
-                    <th className="p-4">Puesto</th>
-                    <th className="p-4">Salario Base</th>
-                    <th className="p-4">Bonif. Ley (Q250)</th>
-                    <th className="p-4">IGSS Laboral (4.83%)</th>
-                    <th className="p-4">Líquido a Recibir</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {empleados.map((emp) => {
-                    const { sueldoBase, bonifLey, igssLaboral, liquido } = calcularNomina(emp);
-                    return (
-                      <tr key={emp.id} className="hover:bg-slate-50">
-                        <td className="p-4">
-                          <div className="font-semibold text-slate-900">{emp.nombre || emp.nombre_completo}</div>
-                          {emp.dpi && <div className="text-xs text-slate-400">DPI: {emp.dpi}</div>}
-                        </td>
-                        <td className="p-4 text-slate-600">{emp.puesto}</td>
-                        <td className="p-4 font-mono">Q {sueldoBase.toFixed(2)}</td>
-                        <td className="p-4 font-mono text-emerald-600">+ Q {bonifLey.toFixed(2)}</td>
-                        <td className="p-4 font-mono text-rose-600">- Q {igssLaboral.toFixed(2)}</td>
-                        <td className="p-4 font-mono font-bold text-slate-900">Q {liquido.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                  {empleados.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan="6" className="p-6 text-center text-slate-400">No hay empleados registrados en Supabase.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* MÓDULO 2: CAJA CHICA */}
-        {activeTab === 'cajachica' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Control de Caja Chica</h2>
-                <p className="text-sm text-slate-500">Registro de gastos menores y comprobantes de pago</p>
+          {/* MÓDULO 2: CAJA CHICA */}
+          {activeTab === 'cajachica' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Control de Caja Chica</h2>
+                  <p className="text-sm text-slate-500">
+                    Cliente: <strong className="text-slate-800">{clienteSeleccionado?.razon_social}</strong>
+                  </p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-right">
+                  <p className="text-xs text-amber-800 font-medium">Total Gastos Registrados</p>
+                  <p className="text-xl font-bold font-mono text-amber-950">Q {totalCajaChica.toFixed(2)}</p>
+                </div>
               </div>
-              <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-right">
-                <p className="text-xs text-amber-800 font-medium">Total Gastos Registrados</p>
-                <p className="text-xl font-bold font-mono text-amber-950">Q {totalCajaChica.toFixed(2)}</p>
-              </div>
-            </div>
 
-            {/* Formulario de registro de gastos */}
-            <form onSubmit={handleGuardarGasto} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
-                <input
-                  type="date"
-                  value={nuevoGasto.fecha}
-                  onChange={(e) => setNuevoGasto({ ...nuevoGasto, fecha: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Concepto / Descripción</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Compra de suministros"
-                  value={nuevoGasto.concepto}
-                  onChange={(e) => setNuevoGasto({ ...nuevoGasto, concepto: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Comprobante (Factura/Recibo)</label>
-                <input
-                  type="text"
-                  placeholder="Ej. FAC-1029"
-                  value={nuevoGasto.comprobante}
-                  onChange={(e) => setNuevoGasto({ ...nuevoGasto, comprobante: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Responsable</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Juan Pérez"
-                  value={nuevoGasto.responsable}
-                  onChange={(e) => setNuevoGasto({ ...nuevoGasto, responsable: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Monto (Q)</label>
-                <div className="flex space-x-2">
+              {/* Formulario */}
+              <form onSubmit={handleGuardarGasto} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
                   <input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={nuevoGasto.monto}
-                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, monto: e.target.value })}
-                    className="w-full border border-slate-300 rounded-lg p-2 text-sm font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    type="date"
+                    value={nuevoGasto.fecha}
+                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, fecha: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     required
                   />
-                  <button
-                    type="submit"
-                    disabled={guardandoGasto}
-                    className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 rounded-lg flex items-center justify-center transition disabled:opacity-50"
-                  >
-                    <PlusCircle className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            {/* Tabla de Gastos */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
-                  <tr>
-                    <th className="p-4">Fecha</th>
-                    <th className="p-4">Concepto</th>
-                    <th className="p-4">Comprobante</th>
-                    <th className="p-4">Responsable</th>
-                    <th className="p-4">Monto</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {gastos.map((gasto) => (
-                    <tr key={gasto.id} className="hover:bg-slate-50">
-                      <td className="p-4 text-slate-500">{gasto.fecha}</td>
-                      <td className="p-4 font-semibold text-slate-900">{gasto.concepto}</td>
-                      <td className="p-4 text-slate-600">{gasto.comprobante || 'N/A'}</td>
-                      <td className="p-4 text-slate-600">{gasto.responsable || 'N/A'}</td>
-                      <td className="p-4 font-mono font-bold text-slate-900">Q {Number(gasto.monto).toFixed(2)}</td>
-                    </tr>
-                  ))}
-                  {gastos.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan="5" className="p-6 text-center text-slate-400">No hay registros de gastos.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* MÓDULO 3: INGESTIÓN SAT (XML) */}
-        {activeTab === 'sat' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
-                <p className="text-sm text-slate-500">Carga tus DTEs en XML para desglosar el IVA Crédito Fiscal (12%)</p>
-              </div>
-              <div className="flex space-x-3 items-center">
-                <div className="bg-white border border-slate-200 p-3.5 rounded-xl text-right shadow-sm">
-                  <p className="text-xs text-slate-500 font-medium">Crédito Fiscal (IVA 12%)</p>
-                  <p className="text-xl font-bold font-mono text-emerald-600">Q {totalIvaSAT.toFixed(2)}</p>
-                </div>
-                <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-right">
-                  <p className="text-xs text-amber-800 font-medium">Total Facturas</p>
-                  <p className="text-xl font-bold font-mono text-amber-950">Q {totalFacturasSAT.toFixed(2)}</p>
-                </div>
-                {facturasPendientesCount > 0 && (
-                  <button
-                    onClick={handleGuardarFacturasSAT}
-                    disabled={guardandoSAT}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3.5 rounded-xl flex items-center space-x-2 text-sm shadow-sm transition disabled:opacity-50"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>{guardandoSAT ? 'Guardando...' : `Guardar en Supabase (${facturasPendientesCount})`}</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {mensajeSAT && (
-              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-4 py-3 rounded-lg flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>{mensajeSAT}</span>
-              </div>
-            )}
-
-            {/* Zona de Carga de Archivos */}
-            <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 bg-white rounded-xl p-8 text-center transition cursor-pointer relative shadow-sm">
-              <input
-                type="file"
-                multiple
-                accept=".xml"
-                onChange={handleFileUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <div className="flex flex-col items-center justify-center space-y-3">
-                <div className="p-3 bg-amber-100 rounded-full text-amber-700">
-                  <UploadCloud className="w-8 h-8" />
                 </div>
                 <div>
-                  <p className="text-slate-700 font-semibold">Arrastra tus archivos XML aquí o haz clic para examinar</p>
-                  <p className="text-xs text-slate-400 mt-1">Soporta múltiples archivos de Facturas Electrónicas DTE de la SAT</p>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Concepto / Descripción</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Suministros de oficina"
+                    value={nuevoGasto.concepto}
+                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, concepto: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                    required
+                  />
                 </div>
-                {procesandoXML && (
-                  <div className="flex items-center space-x-2 text-amber-600 text-xs font-semibold">
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Procesando estructura XML de la SAT...</span>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Comprobante</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. FAC-1029"
+                    value={nuevoGasto.comprobante}
+                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, comprobante: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Responsable</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Juan Pérez"
+                    value={nuevoGasto.responsable}
+                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, responsable: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Monto (Q)</label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={nuevoGasto.monto}
+                      onChange={(e) => setNuevoGasto({ ...nuevoGasto, monto: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg p-2 text-sm font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={guardandoGasto}
+                      className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 rounded-lg flex items-center justify-center transition disabled:opacity-50"
+                    >
+                      <PlusCircle className="w-5 h-5" />
+                    </button>
                   </div>
-                )}
+                </div>
+              </form>
+
+              {/* Tabla */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
+                    <tr>
+                      <th className="p-4">Fecha</th>
+                      <th className="p-4">Concepto</th>
+                      <th className="p-4">Comprobante</th>
+                      <th className="p-4">Responsable</th>
+                      <th className="p-4">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {gastos.map((gasto) => (
+                      <tr key={gasto.id} className="hover:bg-slate-50">
+                        <td className="p-4 text-slate-500">{gasto.fecha}</td>
+                        <td className="p-4 font-semibold text-slate-900">{gasto.concepto}</td>
+                        <td className="p-4 text-slate-600">{gasto.comprobante || 'N/A'}</td>
+                        <td className="p-4 text-slate-600">{gasto.responsable || 'N/A'}</td>
+                        <td className="p-4 font-mono font-bold text-slate-900">Q {Number(gasto.monto).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    {gastos.length === 0 && !loading && (
+                      <tr>
+                        <td colSpan="5" className="p-6 text-center text-slate-400">No hay registros de gastos.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
+          )}
 
-            {/* Tabla de Facturas Extraídas */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
-                  <tr>
-                    <th className="p-4">Estado</th>
-                    <th className="p-4">Fecha / Serie-Número</th>
-                    <th className="p-4">Emisor (Proveedor)</th>
-                    <th className="p-4">NIT</th>
-                    <th className="p-4 text-right">Base Imp. (Q)</th>
-                    <th className="p-4 text-right">IVA 12% (Q)</th>
-                    <th className="p-4 text-right">Total Factura (Q)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {facturasXML.map((fac) => (
-                    <tr key={fac.id || fac.uuid} className="hover:bg-slate-50">
-                      <td className="p-4">
-                        {fac.guardado ? (
-                          <span className="inline-flex items-center text-xs text-emerald-700 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Guardado
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center text-xs text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">
-                            Pendiente
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <div className="font-semibold text-slate-900">{fac.fecha}</div>
-                        <div className="text-xs font-mono text-slate-500">{fac.serie} - {fac.numero}</div>
-                      </td>
-                      <td className="p-4">
-                        <div className="font-medium text-slate-800">{fac.emisorNombre}</div>
-                        <div className="text-xs text-slate-400 font-mono truncate max-w-xs" title={fac.uuid}>UUID: {fac.uuid}</div>
-                      </td>
-                      <td className="p-4 font-mono text-slate-600">{fac.emisorNit}</td>
-                      <td className="p-4 font-mono text-right text-slate-700">Q {fac.base.toFixed(2)}</td>
-                      <td className="p-4 font-mono text-right text-emerald-600 font-semibold">+ Q {fac.iva.toFixed(2)}</td>
-                      <td className="p-4 font-mono text-right font-bold text-slate-900">Q {fac.total.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                  {facturasXML.length === 0 && (
-                    <tr>
-                      <td colSpan="7" className="p-8 text-center text-slate-400">
-                        <FileCode className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                        No has cargado ninguna factura XML de la SAT todavía.
-                      </td>
-                    </tr>
+          {/* MÓDULO 3: INGESTIÓN SAT (XML) */}
+          {activeTab === 'sat' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
+                  <p className="text-sm text-slate-500">
+                    Asignado a: <strong className="text-slate-800">{clienteSeleccionado?.razon_social}</strong> (NIT: {clienteSeleccionado?.nit})
+                  </p>
+                </div>
+                <div className="flex space-x-3 items-center">
+                  <div className="bg-white border border-slate-200 p-3.5 rounded-xl text-right shadow-sm">
+                    <p className="text-xs text-slate-500 font-medium">Crédito Fiscal (IVA 12%)</p>
+                    <p className="text-xl font-bold font-mono text-emerald-600">Q {totalIvaSAT.toFixed(2)}</p>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-right">
+                    <p className="text-xs text-amber-800 font-medium">Total Facturas</p>
+                    <p className="text-xl font-bold font-mono text-amber-950">Q {totalFacturasSAT.toFixed(2)}</p>
+                  </div>
+                  {facturasPendientesCount > 0 && (
+                    <button
+                      onClick={handleGuardarFacturasSAT}
+                      disabled={guardandoSAT}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3.5 rounded-xl flex items-center space-x-2 text-sm shadow-sm transition disabled:opacity-50"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>{guardandoSAT ? 'Guardando...' : `Guardar en Supabase (${facturasPendientesCount})`}</span>
+                    </button>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
 
-      </main>
+              {mensajeSAT && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-4 py-3 rounded-lg flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>{mensajeSAT}</span>
+                </div>
+              )}
+
+              {/* Carga de Archivos */}
+              <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 bg-white rounded-xl p-8 text-center transition cursor-pointer relative shadow-sm">
+                <input
+                  type="file"
+                  multiple
+                  accept=".xml"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="flex flex-col items-center justify-center space-y-3">
+                  <div className="p-3 bg-amber-100 rounded-full text-amber-700">
+                    <UploadCloud className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <p className="text-slate-700 font-semibold">Arrastra tus archivos XML aquí o haz clic para examinar</p>
+                    <p className="text-xs text-slate-400 mt-1">Soporta múltiples archivos de Facturas Electrónicas DTE de la SAT</p>
+                  </div>
+                  {procesandoXML && (
+                    <div className="flex items-center space-x-2 text-amber-600 text-xs font-semibold">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Procesando estructura XML de la SAT...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabla de Facturas */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
+                    <tr>
+                      <th className="p-4">Estado</th>
+                      <th className="p-4">Fecha / Serie-Número</th>
+                      <th className="p-4">Emisor (Proveedor)</th>
+                      <th className="p-4">NIT</th>
+                      <th className="p-4 text-right">Base Imp. (Q)</th>
+                      <th className="p-4 text-right">IVA 12% (Q)</th>
+                      <th className="p-4 text-right">Total Factura (Q)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {facturasXML.map((fac) => (
+                      <tr key={fac.id || fac.uuid} className="hover:bg-slate-50">
+                        <td className="p-4">
+                          {fac.guardado ? (
+                            <span className="inline-flex items-center text-xs text-emerald-700 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Guardado
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center text-xs text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                              Pendiente
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="font-semibold text-slate-900">{fac.fecha}</div>
+                          <div className="text-xs font-mono text-slate-500">{fac.serie} - {fac.numero}</div>
+                        </td>
+                        <td className="p-4">
+                          <div className="font-medium text-slate-800">{fac.emisorNombre}</div>
+                          <div className="text-xs text-slate-400 font-mono truncate max-w-xs" title={fac.uuid}>UUID: {fac.uuid}</div>
+                        </td>
+                        <td className="p-4 font-mono text-slate-600">{fac.emisorNit}</td>
+                        <td className="p-4 font-mono text-right text-slate-700">Q {fac.base.toFixed(2)}</td>
+                        <td className="p-4 font-mono text-right text-emerald-600 font-semibold">+ Q {fac.iva.toFixed(2)}</td>
+                        <td className="p-4 font-mono text-right font-bold text-slate-900">Q {fac.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    {facturasXML.length === 0 && (
+                      <tr>
+                        <td colSpan="7" className="p-8 text-center text-slate-400">
+                          <FileCode className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                          No hay facturas registradas para este cliente aún.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      {/* MODAL PARA AGREGAR NUEVO CLIENTE */}
+      {mostrarModalCliente && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <Building2 className="w-5 h-5 text-amber-500" />
+              <span>Registrar Nuevo Cliente Fiscal</span>
+            </h3>
+            <form onSubmit={handleCrearCliente} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">NIT del Cliente</label>
+                <input
+                  type="text"
+                  placeholder="Ej. 12345678 o CF"
+                  value={nuevoCliente.nit}
+                  onChange={(e) => setNuevoCliente({ ...nuevoCliente, nit: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Razón Social (Nombre Fiscal)</label>
+                <input
+                  type="text"
+                  placeholder="Ej. Comercial El Sol, Sociedad Anónima"
+                  value={nuevoCliente.razon_social}
+                  onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre Comercial (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Ej. Tienda El Sol"
+                  value={nuevoCliente.nombre_comercial}
+                  onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre_comercial: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalCliente(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg text-sm transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoCliente}
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition disabled:opacity-50"
+                >
+                  {guardandoCliente ? 'Guardando...' : 'Guardar Cliente'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
