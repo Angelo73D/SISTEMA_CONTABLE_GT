@@ -248,7 +248,7 @@ export default function App() {
     setMensajeSAT('');
 
     const registros = pendientes.map(f => ({
-      cliente_id: clienteSeleccionado.id, // VINCULADO AL CLIENTE ACTIVO
+      cliente_id: clienteSeleccionado.id,
       uuid: f.uuid,
       serie: f.serie,
       numero: f.numero,
@@ -756,64 +756,105 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL PARA AGREGAR NUEVO CLIENTE */}
+      {/* MODAL EMERGENTE FLOTANTE (GLASSMORPHISM Y CENTRADO TOTAL) */}
       {mostrarModalCliente && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-              <Building2 className="w-5 h-5 text-amber-500" />
-              <span>Registrar Nuevo Cliente Fiscal</span>
-            </h3>
-            <form onSubmit={handleCrearCliente} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          
+          <div className="relative w-full max-w-lg overflow-hidden bg-slate-900/95 border border-slate-700/60 rounded-3xl shadow-2xl shadow-amber-500/10 backdrop-blur-xl p-8 transition-all">
+            
+            {/* Resplandor de fondo */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Cabecera */}
+            <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl text-slate-950 shadow-lg shadow-amber-500/20">
+                  <Building2 className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white tracking-tight">Nuevo Cliente Fiscal</h3>
+                  <p className="text-xs text-slate-400">Registra una nueva empresa en el sistema</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setMostrarModalCliente(false)}
+                className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-xl transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Formulario */}
+            <form onSubmit={handleCrearCliente} className="mt-6 space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">NIT del Cliente</label>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  NIT del Cliente <span className="text-amber-400">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="Ej. 12345678 o CF"
                   value={nuevoCliente.nit}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nit: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
                   required
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Razón Social (Nombre Fiscal)</label>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Razón Social (Nombre Fiscal) <span className="text-amber-400">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="Ej. Comercial El Sol, Sociedad Anónima"
                   value={nuevoCliente.razon_social}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                   required
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre Comercial (Opcional)</label>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Nombre Comercial <span className="text-slate-500">(Opcional)</span>
+                </label>
                 <input
                   type="text"
                   placeholder="Ej. Tienda El Sol"
                   value={nuevoCliente.nombre_comercial}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre_comercial: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                 />
               </div>
-              <div className="flex space-x-3 pt-2">
+
+              {/* Botones de Acción */}
+              <div className="flex items-center space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setMostrarModalCliente(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg text-sm transition"
+                  className="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-xl text-sm transition-all border border-slate-700"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={guardandoCliente}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition disabled:opacity-50"
+                  className="w-1/2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center space-x-2"
                 >
-                  {guardandoCliente ? 'Guardando...' : 'Guardar Cliente'}
+                  {guardandoCliente ? (
+                    <span>Guardando...</span>
+                  ) : (
+                    <>
+                      <span>Guardar Cliente</span>
+                      <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
+
           </div>
         </div>
       )}
