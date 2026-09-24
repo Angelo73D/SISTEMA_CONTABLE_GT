@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from './supabaseClient';
 import { 
   FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, 
@@ -756,8 +757,8 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL EMERGENTE COMPLETO (GLASSMORPHISM CENTRADO) */}
-      {mostrarModalCliente && (
+      {/* MODAL EMERGENTE COMPLETO (USANDO PORTAL PARA FORZAR QUE FLOTE) */}
+      {mostrarModalCliente && createPortal(
         <div 
           className="flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
           style={{
@@ -872,7 +873,8 @@ export default function App() {
             </form>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
