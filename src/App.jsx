@@ -758,7 +758,19 @@ export default function App() {
 
       {/* MODAL EMERGENTE COMPLETO (GLASSMORPHISM CENTRADO) */}
       {mostrarModalCliente && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div 
+          className="flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 999999
+          }}
+        >
           
           <div className="relative w-full max-w-lg overflow-hidden bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl p-8">
             
