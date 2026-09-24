@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { 
   FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, 
-  ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save, Building2, UserPlus 
+  ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save, Building2, UserPlus, X
 } from 'lucide-react';
 
 export default function App() {
@@ -382,7 +382,7 @@ export default function App() {
 
           <button
             onClick={() => setMostrarModalCliente(true)}
-            className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold px-3 py-2 rounded-lg flex items-center space-x-2 text-xs transition"
+            className="bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold px-4 py-2 rounded-lg flex items-center space-x-2 text-xs transition shadow-md"
           >
             <UserPlus className="w-4 h-4" />
             <span>+ Agregar Cliente</span>
@@ -756,20 +756,20 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL EMERGENTE FLOTANTE (GLASSMORPHISM Y CENTRADO TOTAL) */}
+      {/* MODAL EMERGENTE COMPLETO (GLASSMORPHISM CENTRADO) */}
       {mostrarModalCliente && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
           
-          <div className="relative w-full max-w-lg overflow-hidden bg-slate-900/95 border border-slate-700/60 rounded-3xl shadow-2xl shadow-amber-500/10 backdrop-blur-xl p-8 transition-all">
+          <div className="relative w-full max-w-lg overflow-hidden bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl p-8">
             
-            {/* Resplandor de fondo */}
+            {/* Efectos de fondo */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Cabecera */}
+            {/* Cabecera del Modal */}
             <div className="flex items-center justify-between pb-6 border-b border-slate-800">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl text-slate-950 shadow-lg shadow-amber-500/20">
+                <div className="p-3 bg-amber-500 text-slate-950 rounded-2xl shadow-lg shadow-amber-500/20">
                   <Building2 className="w-6 h-6 stroke-[2.5]" />
                 </div>
                 <div>
@@ -782,12 +782,14 @@ export default function App() {
                 onClick={() => setMostrarModalCliente(false)}
                 className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-xl transition-all"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Formulario */}
+            {/* FORMULARIO COMPLETO */}
             <form onSubmit={handleCrearCliente} className="mt-6 space-y-5">
+              
+              {/* CAMPO 1: NIT */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                   NIT del Cliente <span className="text-amber-400">*</span>
@@ -802,6 +804,7 @@ export default function App() {
                 />
               </div>
 
+              {/* CAMPO 2: RAZÓN SOCIAL */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                   Razón Social (Nombre Fiscal) <span className="text-amber-400">*</span>
@@ -816,6 +819,7 @@ export default function App() {
                 />
               </div>
 
+              {/* CAMPO 3: NOMBRE COMERCIAL */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                   Nombre Comercial <span className="text-slate-500">(Opcional)</span>
@@ -829,7 +833,7 @@ export default function App() {
                 />
               </div>
 
-              {/* Botones de Acción */}
+              {/* BOTONES DE ACCIÓN */}
               <div className="flex items-center space-x-3 pt-4">
                 <button
                   type="button"
@@ -841,7 +845,7 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={guardandoCliente}
-                  className="w-1/2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center space-x-2"
+                  className="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center space-x-2"
                 >
                   {guardandoCliente ? (
                     <span>Guardando...</span>
