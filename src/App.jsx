@@ -27,7 +27,7 @@ export default function App() {
     setLoading(false);
   };
 
-  // Cálculo de planilla según leyes de Guatemala (IGSS Laboral 4.83% + Bonificación Ley Q250.00)
+  // CÃ¡lculo de planilla segÃºn leyes de Guatemala (IGSS Laboral 4.83% + BonificaciÃ³n Ley Q250.00)
   const calcularNomina = (emp) => {
     const sueldoBase = Number(emp.salario_base) || 0;
     const bonifLey = Number(emp.bonificacion_ley) || 250.00;
@@ -42,7 +42,7 @@ export default function App() {
       <aside className="w-64 bg-slate-900 text-white flex flex-col shadow-xl">
         <div className="p-5 border-b border-slate-800">
           <h1 className="text-xl font-bold text-amber-400">GT Contable AI</h1>
-          <p className="text-xs text-slate-400 mt-1">Guatemala • Quetzales (GTQ)</p>
+          <p className="text-xs text-slate-400 mt-1">Guatemala â€¢ Quetzales (GTQ)</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <button
@@ -52,7 +52,7 @@ export default function App() {
             }`}
           >
             <Users className="w-5 h-5" />
-            <span>Nómina y Planillas</span>
+            <span>NÃ³mina y Planillas</span>
           </button>
           <button
             onClick={() => setActiveTab('cajachica')}
@@ -70,7 +70,7 @@ export default function App() {
             }`}
           >
             <FileText className="w-5 h-5" />
-            <span>Ingestión SAT (XML)</span>
+            <span>IngestiÃ³n SAT (XML)</span>
           </button>
         </nav>
         <div className="p-4 border-t border-slate-800">
@@ -84,15 +84,15 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Área Principal */}
+      {/* Ãrea Principal */}
       <main className="flex-1 overflow-y-auto p-8">
         
-        {/* MÓDULO 1: NÓMINA GUATEMALA */}
+        {/* MÃ“DULO 1: NÃ“MINA GUATEMALA */}
         {activeTab === 'nomina' && (
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-slate-800">Planilla de Sueldos y Salarios</h2>
-              <p className="text-sm text-slate-500">Cálculos automáticos con IGSS Laboral (4.83%) y Bonificación Incentivo</p>
+              <p className="text-sm text-slate-500">CÃ¡lculos automÃ¡ticos con IGSS Laboral (4.83%) y BonificaciÃ³n Incentivo</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -104,7 +104,7 @@ export default function App() {
                     <th className="p-4">Salario Base</th>
                     <th className="p-4">Bonif. Ley (Q250)</th>
                     <th className="p-4">IGSS Laboral (4.83%)</th>
-                    <th className="p-4">Líquido a Recibir</th>
+                    <th className="p-4">LÃ­quido a Recibir</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -113,8 +113,8 @@ export default function App() {
                     return (
                       <tr key={emp.id} className="hover:bg-slate-50">
                         <td className="p-4">
-                          <div className="font-semibold text-slate-900">{emp.nombre_completo}</div>
-                          <div className="text-xs text-slate-400">DPI: {emp.dpi}</div>
+                          <div className="font-semibold text-slate-900">{emp.nombre || emp.nombre_completo}</div>
+                          {emp.dpi && <div className="text-xs text-slate-400">DPI: {emp.dpi}</div>}
                         </td>
                         <td className="p-4 text-slate-600">{emp.puesto}</td>
                         <td className="p-4 font-mono">Q {sueldoBase.toFixed(2)}</td>
@@ -135,7 +135,7 @@ export default function App() {
           </div>
         )}
 
-        {/* MÓDULO 2: CAJA CHICA */}
+        {/* MÃ“DULO 2: CAJA CHICA */}
         {activeTab === 'cajachica' && (
           <div className="space-y-6">
             <div>
@@ -175,13 +175,13 @@ export default function App() {
           </div>
         )}
 
-        {/* MÓDULO 3: INGESTIÓN SAT */}
+        {/* MÃ“DULO 3: INGESTIÃ“N SAT */}
         {activeTab === 'sat' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
             <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center bg-white shadow-sm">
-              <p className="text-slate-600 font-medium">Arrastra tus archivos XML de Facturas Electrónicas aquí</p>
-              <p className="text-xs text-slate-400 mt-1">Extrae automáticamente UUID, Serie, NIT, Base e IVA 12%</p>
+              <p className="text-slate-600 font-medium">Arrastra tus archivos XML de Facturas ElectrÃ³nicas aquÃ­</p>
+              <p className="text-xs text-slate-400 mt-1">Extrae automÃ¡ticamente UUID, Serie, NIT, Base e IVA 12%</p>
               <button className="mt-4 bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">
                 Seleccionar Archivos XML
               </button>
