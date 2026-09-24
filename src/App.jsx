@@ -757,7 +757,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL EMERGENTE COMPLETO (ESTILOS DIRECTOS Y CENTRADO GARANTIZADO) */}
+      {/* MODAL EMERGENTE REDISEÑADO (ESTILO MODERNO HIGH-CONTRAST) */}
       {mostrarModalCliente && createPortal(
         <div 
           style={{
@@ -766,121 +766,144 @@ export default function App() {
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundColor: 'rgba(2, 6, 23, 0.85)',
-            backdropFilter: 'blur(12px)',
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(16px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '16px',
+            padding: '20px',
             zIndex: 999999
           }}
         >
+          {/* Tarjeta principal del Pop-up */}
           <div 
-            className="relative w-full max-w-lg overflow-hidden border border-slate-700 rounded-3xl shadow-2xl p-8"
+            className="relative w-full max-w-lg rounded-3xl p-8 transition-all"
             style={{
               backgroundColor: '#0f172a',
-              color: '#ffffff',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              border: '1px solid #334155',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(245, 158, 11, 0.15)',
+              color: '#ffffff'
             }}
           >
-            {/* Efectos de fondo */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Botón flotante para cerrar (X arriba a la derecha) */}
+            <button
+              type="button"
+              onClick={() => setMostrarModalCliente(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-all"
+              style={{ cursor: 'pointer', border: '1px solid #334155', backgroundColor: '#1e293b' }}
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            {/* Cabecera del Modal */}
-            <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-amber-500 text-slate-950 rounded-2xl shadow-lg shadow-amber-500/20">
-                  <Building2 className="w-6 h-6 stroke-[2.5]" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white tracking-tight" style={{ color: '#ffffff' }}>Nuevo Cliente Fiscal</h3>
-                  <p className="text-xs text-slate-400" style={{ color: '#94a3b8' }}>Registra una nueva empresa en el sistema</p>
-                </div>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => setMostrarModalCliente(false)}
-                className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-xl transition-all"
-                style={{ cursor: 'pointer' }}
+            {/* Cabecera / Banner Destacado */}
+            <div className="flex flex-col items-start space-y-3 pb-6 border-b border-slate-800 pr-10">
+              <div 
+                className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center space-x-2"
+                style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}
               >
-                <X className="w-5 h-5" />
-              </button>
+                <Building2 className="w-4 h-4 stroke-[2.5]" />
+                <span>Gestión Fiscal Guatemala</span>
+              </div>
+              <h3 className="text-2xl font-black text-white tracking-tight" style={{ color: '#ffffff' }}>
+                Nuevo Cliente Fiscal
+              </h3>
+              <p className="text-sm text-slate-400" style={{ color: '#94a3b8' }}>
+                Completa la información para vincular facturas DTE y registros de caja chica.
+              </p>
             </div>
 
-            {/* FORMULARIO COMPLETO */}
+            {/* Formulario Estilizado */}
             <form onSubmit={handleCrearCliente} className="mt-6 space-y-5">
               
-              {/* CAMPO 1: NIT */}
+              {/* Campo 1: NIT */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
-                  NIT del Cliente <span className="text-amber-400" style={{ color: '#fbbf24' }}>*</span>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#e2e8f0' }}>
+                  NIT del Cliente <span style={{ color: '#f59e0b' }}>*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. 12345678 o CF"
                   value={nuevoCliente.nit}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nit: e.target.value })}
-                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 font-mono transition-all"
-                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                  className="w-full border rounded-2xl px-4 py-3.5 text-sm focus:outline-none font-mono transition-all"
+                  style={{ 
+                    backgroundColor: '#1e293b', 
+                    color: '#ffffff', 
+                    borderColor: '#334155',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
+                  }}
                   required
                 />
               </div>
 
-              {/* CAMPO 2: RAZÓN SOCIAL */}
+              {/* Campo 2: Razón Social */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
-                  Razón Social (Nombre Fiscal) <span className="text-amber-400" style={{ color: '#fbbf24' }}>*</span>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#e2e8f0' }}>
+                  Razón Social (Nombre Fiscal) <span style={{ color: '#f59e0b' }}>*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. Comercial El Sol, Sociedad Anónima"
                   value={nuevoCliente.razon_social}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social: e.target.value })}
-                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-all"
-                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                  className="w-full border rounded-2xl px-4 py-3.5 text-sm focus:outline-none transition-all"
+                  style={{ 
+                    backgroundColor: '#1e293b', 
+                    color: '#ffffff', 
+                    borderColor: '#334155',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
+                  }}
                   required
                 />
               </div>
 
-              {/* CAMPO 3: NOMBRE COMERCIAL */}
+              {/* Campo 3: Nombre Comercial */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
-                  Nombre Comercial <span className="text-slate-500" style={{ color: '#64748b' }}>(Opcional)</span>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#e2e8f0' }}>
+                  Nombre Comercial <span style={{ color: '#64748b' }}>(Opcional)</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. Tienda El Sol"
                   value={nuevoCliente.nombre_comercial}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre_comercial: e.target.value })}
-                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-all"
-                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                  className="w-full border rounded-2xl px-4 py-3.5 text-sm focus:outline-none transition-all"
+                  style={{ 
+                    backgroundColor: '#1e293b', 
+                    color: '#ffffff', 
+                    borderColor: '#334155',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
+                  }}
                 />
               </div>
 
-              {/* BOTONES DE ACCIÓN */}
-              <div className="flex items-center space-x-3 pt-4">
+              {/* Botones de Acción */}
+              <div className="flex items-center space-x-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setMostrarModalCliente(false)}
-                  className="w-1/2 border border-slate-700 font-semibold py-3 rounded-xl text-sm transition-all"
-                  style={{ backgroundColor: '#1e293b', color: '#cbd5e1', cursor: 'pointer' }}
+                  className="w-1/3 font-semibold py-3.5 rounded-2xl text-sm transition-all border"
+                  style={{ backgroundColor: '#1e293b', color: '#cbd5e1', borderColor: '#334155', cursor: 'pointer' }}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={guardandoCliente}
-                  className="w-1/2 font-bold py-3 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2"
-                  style={{ backgroundColor: '#f59e0b', color: '#020617', cursor: 'pointer' }}
+                  className="w-2/3 font-bold py-3.5 rounded-2xl text-sm transition-all shadow-xl flex items-center justify-center space-x-2"
+                  style={{ 
+                    backgroundColor: '#f59e0b', 
+                    color: '#0f172a', 
+                    cursor: 'pointer',
+                    boxShadow: '0 10px 20px -5px rgba(245, 158, 11, 0.4)'
+                  }}
                 >
                   {guardandoCliente ? (
                     <span>Guardando...</span>
                   ) : (
                     <>
                       <span>Guardar Cliente</span>
-                      <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                      <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                     </>
                   )}
                 </button>
