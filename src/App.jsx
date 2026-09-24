@@ -757,24 +757,32 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL EMERGENTE COMPLETO (USANDO PORTAL PARA FORZAR QUE FLOTE) */}
+      {/* MODAL EMERGENTE COMPLETO (ESTILOS DIRECTOS Y CENTRADO GARANTIZADO) */}
       {mostrarModalCliente && createPortal(
         <div 
-          className="flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
-            right: 0,
-            bottom: 0,
             width: '100vw',
             height: '100vh',
+            backgroundColor: 'rgba(2, 6, 23, 0.85)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
             zIndex: 999999
           }}
         >
-          
-          <div className="relative w-full max-w-lg overflow-hidden bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl p-8">
-            
+          <div 
+            className="relative w-full max-w-lg overflow-hidden border border-slate-700 rounded-3xl shadow-2xl p-8"
+            style={{
+              backgroundColor: '#0f172a',
+              color: '#ffffff',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}
+          >
             {/* Efectos de fondo */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -786,14 +794,16 @@ export default function App() {
                   <Building2 className="w-6 h-6 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white tracking-tight">Nuevo Cliente Fiscal</h3>
-                  <p className="text-xs text-slate-400">Registra una nueva empresa en el sistema</p>
+                  <h3 className="text-xl font-bold text-white tracking-tight" style={{ color: '#ffffff' }}>Nuevo Cliente Fiscal</h3>
+                  <p className="text-xs text-slate-400" style={{ color: '#94a3b8' }}>Registra una nueva empresa en el sistema</p>
                 </div>
               </div>
               
               <button
+                type="button"
                 onClick={() => setMostrarModalCliente(false)}
                 className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-xl transition-all"
+                style={{ cursor: 'pointer' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -804,45 +814,48 @@ export default function App() {
               
               {/* CAMPO 1: NIT */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  NIT del Cliente <span className="text-amber-400">*</span>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
+                  NIT del Cliente <span className="text-amber-400" style={{ color: '#fbbf24' }}>*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. 12345678 o CF"
                   value={nuevoCliente.nit}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nit: e.target.value })}
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all font-mono"
+                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 font-mono transition-all"
+                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
                   required
                 />
               </div>
 
               {/* CAMPO 2: RAZÓN SOCIAL */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Razón Social (Nombre Fiscal) <span className="text-amber-400">*</span>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
+                  Razón Social (Nombre Fiscal) <span className="text-amber-400" style={{ color: '#fbbf24' }}>*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. Comercial El Sol, Sociedad Anónima"
                   value={nuevoCliente.razon_social}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social: e.target.value })}
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-all"
+                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
                   required
                 />
               </div>
 
               {/* CAMPO 3: NOMBRE COMERCIAL */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Nombre Comercial <span className="text-slate-500">(Opcional)</span>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" style={{ color: '#cbd5e1' }}>
+                  Nombre Comercial <span className="text-slate-500" style={{ color: '#64748b' }}>(Opcional)</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Ej. Tienda El Sol"
                   value={nuevoCliente.nombre_comercial}
                   onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre_comercial: e.target.value })}
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  className="w-full border border-slate-700/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-all"
+                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
                 />
               </div>
 
@@ -851,14 +864,16 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setMostrarModalCliente(false)}
-                  className="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-xl text-sm transition-all border border-slate-700"
+                  className="w-1/2 border border-slate-700 font-semibold py-3 rounded-xl text-sm transition-all"
+                  style={{ backgroundColor: '#1e293b', color: '#cbd5e1', cursor: 'pointer' }}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={guardandoCliente}
-                  className="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center space-x-2"
+                  className="w-1/2 font-bold py-3 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2"
+                  style={{ backgroundColor: '#f59e0b', color: '#020617', cursor: 'pointer' }}
                 >
                   {guardandoCliente ? (
                     <span>Guardando...</span>
