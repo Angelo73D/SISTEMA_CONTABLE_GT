@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('nomina');
@@ -18,6 +18,10 @@ export default function App() {
     monto: ''
   });
   const [guardandoGasto, setGuardandoGasto] = useState(false);
+
+  // Estado para Módulo SAT (DTE XML)
+  const [facturasXML, setFacturasXML] = useState([]);
+  const [procesandoXML, setProcesandoXML] = useState(false);
 
   // Cargar datos reales desde Supabase
   useEffect(() => {
@@ -71,7 +75,72 @@ export default function App() {
     setGuardandoGasto(false);
   };
 
-  // Cálculo de planilla individual (IGSS Laboral 4.83% + Bonificación Ley Q250.00)
+  // PARSER DE ARCHIVOS XML DE LA SAT
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+
+    setProcesandoXML(true);
+    const nuevasFacturas = [];
+
+    for (const file of files) {
+      if (file.type !== 'text/xml' && !file.name.endsWith('.xml')) continue;
+
+      const text = await file.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+
+      try {
+        // Extracción con Namespace DTE o fallback
+        const getElementValue = (tagName) => {
+          const el = xmlDoc.getElementsByTagName(tagName)[0] || xmlDoc.getElementsByTagName(`dte:${tagName}`)[0];
+          return el ? el.textContent : '';
+        };
+
+        const getAttributeValue = (tagName, attr) => {
+          const el = xmlDoc.getElementsByTagName(tagName)[0] || xmlDoc.getElementsByTagName(`dte:${tagName}`)[0];
+          return el ? el.getAttribute(attr) : '';
+        };
+
+        const uuid = getElementValue('NumeroAutorizacion') || getElementValue('Autorizacion') || 'N/A';
+        const serie = getAttributeValue('DatosEmision', 'Serie') || getAttributeValue('DTE', 'Serie') || 'N/A';
+        const numero = getAttributeValue('DatosEmision', 'Numero') || getAttributeValue('DTE', 'Numero') || 'N/A';
+        const fechaHora = getAttributeValue('DatosEmision', 'FechaHoraEmision') || new Date().toISOString();
+        const fecha = fechaHora.split('T')[0];
+
+        const emisorNit = getAttributeValue('Emisor', 'NITEmisor') || getAttributeValue('Emisor', 'NIT') || 'N/A';
+        const emisorNombre = getAttributeValue('Emisor', 'NombreEmisor') || getAttributeValue('Emisor', 'Nombre') || 'Proveedor Desconocido';
+
+        const totalStr = getElementValue('MontoTotal') || getElementValue('GranTotal') || '0';
+        const total = parseFloat(totalStr) || 0;
+        
+        // Cálculo de IVA e Importe Neto en Guatemala (12%)
+        const base = total / 1.12;
+        const iva = total - base;
+
+        nuevasFacturas.push({
+          id: Math.random().toString(36).substr(2, 9),
+          uuid,
+          serie,
+          numero,
+          fecha,
+          emisorNit,
+          emisorNombre,
+          base,
+          iva,
+          total,
+          nombreArchivo: file.name
+        });
+      } catch (err) {
+        console.error("Error al procesar el archivo XML:", file.name, err);
+      }
+    }
+
+    setFacturasXML((prev) => [...prev, ...nuevasFacturas]);
+    setProcesandoXML(false);
+  };
+
+  // Cálculo de planilla individual
   const calcularNomina = (emp) => {
     const sueldoBase = Number(emp.salario_base) || 0;
     const bonifLey = Number(emp.bonificacion_ley) || 250.00;
@@ -84,7 +153,7 @@ export default function App() {
   const resumenPlanilla = empleados.reduce(
     (acc, emp) => {
       const { sueldoBase, bonifLey, igssLaboral, liquido } = calcularNomina(emp);
-      const cuotaPatronal = sueldoBase * 0.1267; // 10.67% IGSS + 1% IRTRA + 1% INTECAP
+      const cuotaPatronal = sueldoBase * 0.1267;
       
       return {
         totalSueldos: acc.totalSueldos + sueldoBase,
@@ -100,8 +169,10 @@ export default function App() {
   const totalDebe = resumenPlanilla.totalSueldos + resumenPlanilla.totalBonificacion + resumenPlanilla.totalCuotaPatronal;
   const totalHaber = resumenPlanilla.totalIgssLaboral + resumenPlanilla.totalCuotaPatronal + resumenPlanilla.totalLiquido;
 
-  // Total acumulado en Caja Chica
+  // Totales de Caja Chica y SAT
   const totalCajaChica = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
+  const totalFacturasSAT = facturasXML.reduce((acc, f) => acc + f.total, 0);
+  const totalIvaSAT = facturasXML.reduce((acc, f) => acc + f.iva, 0);
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans">
@@ -174,7 +245,7 @@ export default function App() {
 
             {/* SECCIÓN DESPLEGABLE: ASIENTO CONTABLE */}
             {mostrarAsiento && (
-              <div className="bg-slate-900 text-white rounded-xl shadow-lg p-6 border border-slate-800 space-y-4 animate-fadeIn">
+              <div className="bg-slate-900 text-white rounded-xl shadow-lg p-6 border border-slate-800 space-y-4">
                 <div className="flex justify-between items-center border-b border-slate-800 pb-3">
                   <div>
                     <h3 className="font-bold text-amber-400 text-base">Partida N° X — Libro Diario (Sueldos del Mes)</h3>
@@ -210,7 +281,7 @@ export default function App() {
                       <td className="py-2.5 text-right text-slate-600">—</td>
                     </tr>
                     <tr>
-                      <td className="py-2.5 pl-6 text-slate-400">a Retentiones IGSS Laboral por Pagar (4.83%)</td>
+                      <td className="py-2.5 pl-6 text-slate-400">a Retenciones IGSS Laboral por Pagar (4.83%)</td>
                       <td className="py-2.5 text-right text-slate-600">—</td>
                       <td className="py-2.5 text-right text-emerald-400">{resumenPlanilla.totalIgssLaboral.toFixed(2)}</td>
                     </tr>
@@ -390,16 +461,92 @@ export default function App() {
           </div>
         )}
 
-        {/* MÓDULO 3: INGESTIÓN SAT */}
+        {/* MÓDULO 3: INGESTIÓN SAT (XML) */}
         {activeTab === 'sat' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
-            <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center bg-white shadow-sm">
-              <p className="text-slate-600 font-medium">Arrastra tus archivos XML de Facturas Electrónicas aquí</p>
-              <p className="text-xs text-slate-400 mt-1">Extrae automáticamente UUID, Serie, NIT, Base e IVA 12%</p>
-              <button className="mt-4 bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">
-                Seleccionar Archivos XML
-              </button>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Lector Masivo de XML de la SAT (DTE)</h2>
+                <p className="text-sm text-slate-500">Carga tus DTEs en XML para desglosar el IVA Crédito Fiscal (12%)</p>
+              </div>
+              <div className="flex space-x-4">
+                <div className="bg-white border border-slate-200 p-4 rounded-xl text-right shadow-sm">
+                  <p className="text-xs text-slate-500 font-medium">Crédito Fiscal (IVA 12%)</p>
+                  <p className="text-xl font-bold font-mono text-emerald-600">Q {totalIvaSAT.toFixed(2)}</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-right">
+                  <p className="text-xs text-amber-800 font-medium">Total Facturas</p>
+                  <p className="text-xl font-bold font-mono text-amber-950">Q {totalFacturasSAT.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Zona de Carga de Archivos */}
+            <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 bg-white rounded-xl p-8 text-center transition cursor-pointer relative shadow-sm">
+              <input
+                type="file"
+                multiple
+                accept=".xml"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <div className="p-3 bg-amber-100 rounded-full text-amber-700">
+                  <UploadCloud className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="text-slate-700 font-semibold">Arrastra tus archivos XML aquí o haz clic para examinar</p>
+                  <p className="text-xs text-slate-400 mt-1">Soporta múltiples archivos de Facturas Electrónicas DTE de la SAT</p>
+                </div>
+                {procesandoXML && (
+                  <div className="flex items-center space-x-2 text-amber-600 text-xs font-semibold">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Procesando estructura XML de la SAT...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tabla de Facturas Extraídas */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
+                  <tr>
+                    <th className="p-4">Fecha / Serie-Número</th>
+                    <th className="p-4">Emisor (Proveedor)</th>
+                    <th className="p-4">NIT</th>
+                    <th className="p-4 text-right">Base Imp. (Q)</th>
+                    <th className="p-4 text-right">IVA 12% (Q)</th>
+                    <th className="p-4 text-right">Total Factura (Q)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {facturasXML.map((fac) => (
+                    <tr key={fac.id} className="hover:bg-slate-50">
+                      <td className="p-4">
+                        <div className="font-semibold text-slate-900">{fac.fecha}</div>
+                        <div className="text-xs font-mono text-slate-500">{fac.serie} - {fac.numero}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium text-slate-800">{fac.emisorNombre}</div>
+                        <div className="text-xs text-slate-400 font-mono truncate max-w-xs" title={fac.uuid}>UUID: {fac.uuid}</div>
+                      </td>
+                      <td className="p-4 font-mono text-slate-600">{fac.emisorNit}</td>
+                      <td className="p-4 font-mono text-right text-slate-700">Q {fac.base.toFixed(2)}</td>
+                      <td className="p-4 font-mono text-right text-emerald-600 font-semibold">+ Q {fac.iva.toFixed(2)}</td>
+                      <td className="p-4 font-mono text-right font-bold text-slate-900">Q {fac.total.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                  {facturasXML.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-slate-400">
+                        <FileCode className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                        No has cargado ninguna factura XML de la SAT todavía.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
