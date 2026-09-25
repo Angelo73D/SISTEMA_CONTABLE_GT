@@ -38,6 +38,40 @@ export default function App() {
   const [guardandoSAT, setGuardandoSAT] = useState(false);
   const [mensajeSAT, setMensajeSAT] = useState('');
 
+  // Ítems dinámicos y cálculo automático de IVA 12% (SAT Guatemala)
+  const [itemsFactura, setItemsFactura] = useState([
+    { id: 1, descripcion: 'Servicios Contables y Fiscales', cantidad: 1, precioUnitario: 1000 }
+  ]);
+
+  const handleAgregarItem = () => {
+    setItemsFactura([
+      ...itemsFactura,
+      { id: Date.now(), descripcion: '', cantidad: 1, precioUnitario: 0 }
+    ]);
+  };
+
+  const handleEliminarItem = (id) => {
+    if (itemsFactura.length === 1) return; // Mantiene al menos 1 ítem activo
+    setItemsFactura(itemsFactura.filter(item => item.id !== id));
+  };
+
+  const handleItemChange = (id, campo, valor) => {
+    setItemsFactura(itemsFactura.map(item => {
+      if (item.id === id) {
+        return { 
+          ...item, 
+          [campo]: campo === 'descripcion' ? valor : (valor === '' ? 0 : parseFloat(valor) || 0) 
+        };
+      }
+      return item;
+    }));
+  };
+
+  // Cálculos automáticos de la SAT (IVA 12%)
+  const totalFactura = itemsFactura.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
+  const baseImponibleFactura = totalFactura / 1.12;
+  const ivaFactura = totalFactura - baseImponibleFactura;
+  
   // 1. Cargar Clientes al iniciar
   useEffect(() => {
     fetchClientes();
@@ -317,6 +351,15 @@ export default function App() {
         </div>
         <nav className="flex-1 p-4 space-y-1">
           <button
+            onClick={() => setActiveTab('facturacion')}
+            className={`w-full flex items-center space-x-3 p-3 rounded-lg text-sm font-medium transition ${
+              activeTab === 'facturacion' ? 'bg-amber-500 text-slate-950 font-bold' : 'hover:bg-slate-800 text-slate-300'
+            }`}
+          >
+            <CreditCard className="w-5 h-5" />
+            <span>Emisión DTE / Ventas</span>
+          </button>
+          <button
             onClick={() => setActiveTab('nomina')}
             className={`w-full flex items-center space-x-3 p-3 rounded-lg text-sm font-medium transition ${
               activeTab === 'nomina' ? 'bg-amber-500 text-slate-950 font-bold' : 'hover:bg-slate-800 text-slate-300'
@@ -392,6 +435,107 @@ export default function App() {
 
         <main className="flex-1 overflow-y-auto p-8">
           
+          {/* MÓDULO: EMISIÓN DTE / FACTURACIÓN (SAT GUATEMALA) */}
+          {activeTab === 'facturacion' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">Emisión de Factura DTE (Ventas)</h2>
+                  <p className="text-sm text-slate-500">
+                    Emisor: <strong className="text-slate-800">{clienteSeleccionado?.razon_social}</strong> (NIT: {clienteSeleccionado?.nit})
+                  </p>
+                </div>
+                <div className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-300">
+                  ● Conexión Certificador SAT: Activa
+                </div>
+              </div>
+
+              {/* Formulario / Lista Dinámica de Ítems */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+                  <h3 className="font-bold text-slate-800 text-base">Detalle de Productos / Servicios</h3>
+                  <button
+                    onClick={handleAgregarItem}
+                    className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1 transition shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Agregar Ítem</span>
+                  </button>
+                </div>
+
+                {/* Tabla de Ítems */}
+                <div className="space-y-3">
+                  {itemsFactura.map((item, index) => (
+                    <div key={item.id} className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                      <span className="text-xs font-bold text-slate-400 w-6 text-center">{index + 1}</span>
+                      <input
+                        type="text"
+                        placeholder="Descripción del producto o servicio"
+                        value={item.descripcion}
+                        onChange={(e) => handleItemChange(item.id, 'descripcion', e.target.value)}
+                        className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <div className="w-24">
+                        <label className="text-[10px] text-slate-400 font-semibold uppercase block">Cant.</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.cantidad}
+                          onChange={(e) => handleItemChange(item.id, 'cantidad', e.target.value)}
+                          className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-center font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                      </div>
+                      <div className="w-32">
+                        <label className="text-[10px] text-slate-400 font-semibold uppercase block">Precio Unit. (Q)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.precioUnitario}
+                          onChange={(e) => handleItemChange(item.id, 'precioUnitario', e.target.value)}
+                          className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-right font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                      </div>
+                      <div className="w-32 text-right">
+                        <label className="text-[10px] text-slate-400 font-semibold uppercase block">Subtotal (Q)</label>
+                        <span className="text-sm font-bold text-slate-800">
+                          Q{(item.cantidad * item.precioUnitario).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleEliminarItem(item.id)}
+                        disabled={itemsFactura.length === 1}
+                        className={`p-2 rounded-lg transition ${
+                          itemsFactura.length === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-rose-500 hover:bg-rose-50'
+                        }`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Resumen de Totales e IVA 12% SAT */}
+                <div className="border-t border-slate-100 pt-4 flex justify-end">
+                  <div className="w-72 space-y-2 bg-slate-900 text-white p-4 rounded-xl shadow-md">
+                    <div className="flex justify-between text-xs text-slate-300">
+                      <span>Base Imponible (Neto):</span>
+                      <span className="font-semibold">Q{baseImponibleFactura.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-amber-400 font-medium">
+                      <span>IVA Débito Fiscal (12%):</span>
+                      <span className="font-semibold">Q{ivaFactura.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="border-t border-slate-700 pt-2 flex justify-between text-base font-bold text-white">
+                      <span>Total DTE:</span>
+                      <span className="text-amber-400">Q{totalFactura.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* MÓDULO 1: NÓMINA GUATEMALA */}
           {activeTab === 'nomina' && (
             <div className="space-y-6">
