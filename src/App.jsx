@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { supabase } from './supabaseClient';
 import { 
   FileText, Users, Wallet, RefreshCw, PlusCircle, BookOpen, 
-  ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save, Building2, UserPlus, X
+  ChevronDown, ChevronUp, UploadCloud, CheckCircle2, FileCode, Save, Building2, UserPlus, X,
+  CreditCard, Plus, Trash2
 } from 'lucide-react';
 
 export default function App() {
