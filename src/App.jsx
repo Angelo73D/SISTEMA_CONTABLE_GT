@@ -821,7 +821,7 @@ export default function App() {
             </div>
 
             {/* Campos del Formulario */}
-            <form onSubmit={handleGuardarCliente} className="mt-6 space-y-4">
+            <form onSubmit={handleCrearCliente} className="mt-6 space-y-4">
               
               {/* Campo 1: NIT */}
               <div>
