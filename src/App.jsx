@@ -782,7 +782,7 @@ export default function App() {
             if (e.target === e.currentTarget) setMostrarModalCliente(false);
           }}
         >
-          {/* Tarjeta Tarjeta Flotante / Pop-up con sombra Dribbble */}
+          {/* Tarjeta Flotante / Pop-up con sombra Dribbble */}
           <div 
             className="relative w-full max-w-lg rounded-3xl p-8 transition-all animate-in fade-in zoom-in-95 duration-200"
             style={{
@@ -821,7 +821,7 @@ export default function App() {
             </div>
 
             {/* Campos del Formulario */}
-            <form onSubmit={handleCrearCliente} className="mt-6 space-y-4">
+            <form onSubmit={handleGuardarCliente} className="mt-6 space-y-4">
               
               {/* Campo 1: NIT */}
               <div>
