@@ -7,15 +7,79 @@ import {
   CreditCard, Plus, Trash2, Search, FileCode2, Receipt, Scale, Download, Calendar,
   LayoutDashboard, ShieldCheck, Printer, ArrowUpRight, ArrowDownRight, DollarSign,
   Briefcase, TrendingUp, Layers, PieChart, Landmark, Sparkles, Activity, Home, Clock,
-  AlertCircle, CheckCircle, HelpCircle
+  AlertCircle, CheckCircle, HelpCircle, Loader2, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 
-export default function App() {
+function App() {
   const [activeTab, setActiveTab] = useState('inicio');
-  
-  // Estado para Clientes / Empresas (Multi-tenant real en Supabase)
-  const [clientes, setClientes] = useState([]);
+
+  // ==========================================
+  // ESTADOS MAESTROS ENTERPRISE (AGREGADOS)
+  // ==========================================
+  const [clientes, setClientes] = useState([
+    { id: '1', nit: '123456-7', nombre: 'Comercializadora del Norte, S.A.', enUsoPor: null },
+    { id: '2', nit: '765432-1', nombre: 'Servicios Profesionales de Guatemala', enUsoPor: 'Carlos Duarte' }
+  ]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [isHoveredMenu, setIsHoveredMenu] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Controles de seguridad y formularios
+  const [isSaving, setIsSaving] = useState(false);
+  const [dirtyState, setDirtyState] = useState(false);
+  const [notification, setNotification] = useState(null);
+
+  // 1. Persistencia del cliente activo mediante LocalStorage
+  useEffect(() => {
+    const savedClient = localStorage.getItem('gt_active_client');
+    if (savedClient) {
+      try {
+        const parsed = JSON.parse(savedClient);
+        setClienteSeleccionado(parsed);
+      } catch (e) {
+        console.error("Error al cargar cliente guardado", e);
+      }
+    }
+  }, []);
+
+  const handleSelectClient = (cliente) => {
+    if (cliente.enUsoPor && cliente.enUsoPor !== 'Tú') {
+      showNotification(`⚠️ Esta empresa está siendo atendida actualmente por ${cliente.enUsoPor}. Abriendo en modo lectura.`, 'warning');
+    }
+    setClienteSeleccionado(cliente);
+    localStorage.setItem('gt_active_client', JSON.stringify(cliente));
+    showNotification(`Empresa seleccionada: ${cliente.nombre}`, 'success');
+  };
+
+  // 2. Comandos de teclado globales (Ctrl + K y tecla ESC con Dirty State)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+      if (e.key === 'Escape') {
+        if (dirtyState) {
+          if (window.confirm("⚠️ Tienes datos sin guardar en este formulario. ¿Estás seguro de cerrarlo y descartar los cambios?")) {
+            setDirtyState(false);
+          }
+        } else {
+          setCommandPaletteOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dirtyState]);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  // Estado para Clientes / Empresas (Multi-tenant real en Supabase)
+
   const [mostrarModalCliente, setMostrarModalCliente] = useState(false);
   const [nuevoCliente, setNuevoCliente] = useState({ nit: '', razon_social: '', nombre_comercial: '' });
   const [guardandoCliente, setGuardandoCliente] = useState(false);
@@ -30,7 +94,7 @@ export default function App() {
   // Filtro por Período / Mes Fiscal
   const [periodoFiltro, setPeriodoFiltro] = useState('2026-09');
 
-  // Estado para Caja Chica
+  // Estado para Caja Chica (Con protección de doble clic y dirty state)
   const [nuevoGasto, setNuevoGasto] = useState({
     fecha: '2026-09-25',
     concepto: '',
@@ -72,6 +136,7 @@ export default function App() {
   const [dteGeneradoInfo, setDteGeneradoInfo] = useState(null);
 
   const handleAgregarItem = () => {
+    setDirtyState(true);
     setItemsFactura([
       ...itemsFactura,
       { id: Date.now(), descripcion: '', cantidad: 1, precioUnitario: 0 }
@@ -80,10 +145,12 @@ export default function App() {
 
   const handleEliminarItem = (id) => {
     if (itemsFactura.length === 1) return;
+    setDirtyState(true);
     setItemsFactura(itemsFactura.filter(item => item.id !== id));
   };
 
   const handleItemChange = (id, campo, valor) => {
+    setDirtyState(true);
     setItemsFactura(itemsFactura.map(item => {
       if (item.id === id) {
         return { 
@@ -168,7 +235,6 @@ export default function App() {
         setFacturasXML([]);
       }
 
-      // Datos vinculados exclusivos del cliente activo (vacíos si no hay registros en Supabase)
       setCuentasPorCobrar([]);
       setCuentasPorPagar([]);
       setActivosFijos([]);
@@ -184,6 +250,8 @@ export default function App() {
   };
 
   const handleSincronizarSupabase = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
     setSyncStatus({ loading: true, message: 'Conectando con Supabase...', type: '' });
     try {
       await fetchClientes();
@@ -203,12 +271,14 @@ export default function App() {
         type: 'error' 
       });
     }
+    setIsSaving(false);
   };
 
   const handleCrearCliente = async (e) => {
     e.preventDefault();
-    if (!nuevoCliente.nit || !nuevoCliente.razon_social) return;
+    if (!nuevoCliente.nit || !nuevoCliente.razon_social || isSaving) return;
 
+    setIsSaving(true);
     setGuardandoCliente(true);
     const { data, error } = await supabase
       .from('clientes')
@@ -224,17 +294,20 @@ export default function App() {
       setClienteSeleccionado(data[0]);
       setNuevoCliente({ nit: '', razon_social: '', nombre_comercial: '' });
       setMostrarModalCliente(false);
+      setDirtyState(false);
       setActiveTab('inicio');
     } else {
       alert("Error al guardar cliente. Verifica que el NIT no esté duplicado.");
     }
     setGuardandoCliente(false);
+    setIsSaving(false);
   };
 
   const handleGuardarGasto = async (e) => {
     e.preventDefault();
-    if (!nuevoGasto.concepto || !nuevoGasto.monto || !clienteSeleccionado) return;
+    if (!nuevoGasto.concepto || !nuevoGasto.monto || !clienteSeleccionado || isSaving) return;
 
+    setIsSaving(true);
     setGuardandoGasto(true);
     const { data, error } = await supabase.from('caja_chica').insert([
       {
@@ -256,8 +329,10 @@ export default function App() {
         responsable: '',
         monto: ''
       });
+      setDirtyState(false);
     }
     setGuardandoGasto(false);
+    setIsSaving(false);
   };
 
   const handleFileUpload = async (event) => {
@@ -324,7 +399,7 @@ export default function App() {
   };
 
   const handleGuardarFacturasSAT = async () => {
-    if (!clienteSeleccionado) {
+    if (!clienteSeleccionado || isSaving) {
       alert("Debes seleccionar un cliente antes de guardar.");
       return;
     }
@@ -332,6 +407,7 @@ export default function App() {
     const pendientes = facturasXML.filter(f => !f.guardado);
     if (!pendientes.length) return;
 
+    setIsSaving(true);
     setGuardandoSAT(true);
     setMensajeSAT('');
 
@@ -352,6 +428,7 @@ export default function App() {
     }
 
     setGuardandoSAT(false);
+    setIsSaving(false);
   };
 
   const facturasFiltradasPeriodo = facturasXML.filter(f => {
@@ -441,6 +518,7 @@ export default function App() {
       montoRetenido: retenido,
       fecha: '2026-09-25'
     };
+    setDirtyState(true);
     setRetenciones([...retenciones, reg]);
     setNuevaRetencion({ tipo: 'IVA 15%', documento: '', nitAgente: '', montoBase: '', montoRetenido: '' });
   };
@@ -478,9 +556,31 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
-      
+
+      {/* 1. ESTILOS GLOBALES @media print PARA IMPRESIÓN PROFESIONAL */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          aside, header, button, .no-print {
+            display: none !important;
+          }
+          body, html, main, #root {
+            background: white !important;
+            color: black !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .print-container {
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+        }
+      `}} />
+
       {/* BARRA LATERAL MODERNA CON EXPANSIÓN POR HOVER Y SCROLLBAR INVISIBLE */}
-      <aside className="relative z-30 flex flex-col w-20 hover:w-72 bg-[#0b1329] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl group overflow-hidden">
+      <aside className="relative z-30 flex flex-col w-20 hover:w-72 bg-[#0b1329] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl group overflow-hidden no-print">
         
         {/* Cabecera / Logo */}
         <div className="flex items-center h-20 px-5 border-b border-slate-800 whitespace-nowrap">
@@ -515,7 +615,13 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  if (dirtyState) {
+                    if (!window.confirm("⚠️ Tienes cambios sin guardar. ¿Deseas descartarlos y cambiar de sección?")) return;
+                    setDirtyState(false);
+                  }
+                  setActiveTab(item.id);
+                }}
                 className={`w-full flex items-center h-12 px-3.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
                   isActive 
                     ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/25 font-extrabold' 
@@ -533,8 +639,8 @@ export default function App() {
         <div className="p-3 border-t border-slate-800 bg-slate-950/40 whitespace-nowrap">
           <button 
             onClick={handleSincronizarSupabase}
-            disabled={syncStatus.loading}
-            className="w-full flex items-center h-11 px-3.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs text-slate-300 transition border border-slate-700/50 cursor-pointer overflow-hidden"
+            disabled={syncStatus.loading || isSaving}
+            className="w-full flex items-center h-11 px-3.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs text-slate-300 transition border border-slate-700/50 cursor-pointer overflow-hidden disabled:opacity-50"
           >
             <RefreshCw className={`w-5 h-5 min-w-[20px] text-amber-400 ${syncStatus.loading ? 'animate-spin' : 'hover:rotate-180 transition-transform duration-500'}`} />
             <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">Sincronizar Supabase</span>
@@ -546,7 +652,7 @@ export default function App() {
       <div className="flex-1 flex flex-col overflow-hidden bg-[#070b14]">
         
         {/* BARRA SUPERIOR */}
-        <header className="bg-[#0b1329] border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-lg relative">
+        <header className="bg-[#0b1329] border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-lg relative no-print">
           
           {/* NOTIFICACIÓN FLOTANTE DE SINCRONIZACIÓN INTELIGENTE */}
           {syncStatus.message && (
@@ -571,6 +677,11 @@ export default function App() {
                   onChange={(e) => {
                     const sel = clientes.find(c => c.id === e.target.value);
                     setClienteSeleccionado(sel || null);
+                    if (sel) {
+                      localStorage.setItem('gt_active_client', JSON.stringify(sel));
+                    } else {
+                      localStorage.removeItem('gt_active_client');
+                    }
                     setActiveTab('inicio');
                   }}
                   className="bg-transparent font-bold text-white text-xs focus:outline-none cursor-pointer pr-4"
@@ -616,8 +727,8 @@ export default function App() {
           </div>
         </header>
 
-        {/* CONTENIDO PRINCIPAL */}
-        <main className="flex-1 overflow-y-auto p-8 space-y-6">
+        {/* CONTENEDOR PRINCIPAL */}
+        <main className="flex-1 overflow-y-auto p-8 space-y-6 print-container">
           
           {/* PANTALLA DE INICIO / BIENVENIDA CON SALUDO IA (CONTADORA DUARTE) */}
           {activeTab === 'inicio' && (
@@ -637,7 +748,7 @@ export default function App() {
                     ¡Buenos días, Contadora Duarte! ✨
                   </h2>
                   <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                    Su despacho cuenta con <strong className="text-amber-400">{clientes.length} empresas activas</strong> en cartera sincronizadas con Supabase. Actualmente tiene seleccionada la empresa <strong className="text-white">{clienteSeleccionado?.razon_social || 'Ninguna'}</strong>. ¿Qué desea realizar hoy?
+                    Su despacho cuenta com <strong className="text-amber-400">{clientes.length} empresas activas</strong> en cartera sincronizadas con Supabase. Actualmente tiene seleccionada la empresa <strong className="text-white">{clienteSeleccionado?.razon_social || 'Ninguna'}</strong>. ¿Qué desea realizar hoy?
                   </p>
                 </div>
                 
@@ -665,7 +776,10 @@ export default function App() {
                     return (
                       <div 
                         key={c.id} 
-                        onClick={() => setClienteSeleccionado(c)}
+                        onClick={() => {
+                          setClienteSeleccionado(c);
+                          localStorage.setItem('gt_active_client', JSON.stringify(c));
+                        }}
                         className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-xl ${
                           isSelected 
                             ? 'bg-amber-500/10 border-amber-500/40 shadow-amber-500/10' 
@@ -856,8 +970,8 @@ export default function App() {
                 {clienteSeleccionado && facturasPendientesCount > 0 && (
                   <button
                     onClick={handleGuardarFacturasSAT}
-                    disabled={guardandoSAT}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95 flex items-center space-x-2"
+                    disabled={guardandoSAT || isSaving}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95 flex items-center space-x-2 disabled:opacity-50"
                   >
                     {guardandoSAT && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                     <span>{guardandoSAT ? 'Guardando...' : `Guardar en Supabase (${facturasPendientesCount})`}</span>
@@ -952,14 +1066,45 @@ export default function App() {
               ) : (
                 <>
                   <form onSubmit={handleAgregarRetencion} className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <select value={nuevaRetencion.tipo} onChange={(e) => setNuevaRetencion({...nuevaRetencion, tipo: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                    <select 
+                      value={nuevaRetencion.tipo} 
+                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, tipo: e.target.value}); setDirtyState(true); }} 
+                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                    >
                       <option value="IVA 15%">IVA 15%</option>
                       <option value="ISR 5%">ISR 5%</option>
                     </select>
-                    <input type="text" placeholder="Documento" value={nuevaRetencion.documento} onChange={(e) => setNuevaRetencion({...nuevaRetencion, documento: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" required />
-                    <input type="text" placeholder="NIT Agente" value={nuevaRetencion.nitAgente} onChange={(e) => setNuevaRetencion({...nuevaRetencion, nitAgente: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" />
-                    <input type="number" step="0.01" placeholder="Base Q" value={nuevaRetencion.montoBase} onChange={(e) => setNuevaRetencion({...nuevaRetencion, montoBase: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" required />
-                    <button type="submit" className="bg-amber-500 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95">Registrar</button>
+                    <input 
+                      type="text" 
+                      placeholder="Documento" 
+                      value={nuevaRetencion.documento} 
+                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, documento: e.target.value}); setDirtyState(true); }} 
+                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
+                      required 
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="NIT Agente" 
+                      value={nuevaRetencion.nitAgente} 
+                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, nitAgente: e.target.value}); setDirtyState(true); }} 
+                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
+                    />
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="Base Q" 
+                      value={nuevaRetencion.montoBase} 
+                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, montoBase: e.target.value}); setDirtyState(true); }} 
+                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" 
+                      required 
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={isSaving}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95 disabled:opacity-50"
+                    >
+                      Registrar
+                    </button>
                   </form>
                   <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden">
                     <table className="w-full text-left text-xs font-mono">
@@ -1057,13 +1202,13 @@ export default function App() {
             </div>
           )}
 
-          {/* ESTADOS FINANCIEROS */}
+{/* ESTADOS FINANCIEROS */}
           {activeTab === 'estados' && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-black text-white">Estados Financieros Automáticos</h2>
                 {clienteSeleccionado && (
-                  <button onClick={() => window.print()} className="bg-slate-800 text-amber-400 font-bold px-4 py-2.5 rounded-xl text-xs border border-amber-400/30 cursor-pointer">Imprimir Reportes</button>
+                  <button onClick={() => window.print()} className="bg-slate-800 text-amber-400 font-bold px-4 py-2.5 rounded-xl text-xs border border-amber-400/30 cursor-pointer no-print">Imprimir Reportes</button>
                 )}
               </div>
               {!clienteSeleccionado ? (
@@ -1136,11 +1281,13 @@ export default function App() {
               ) : (
                 <>
                   <form onSubmit={handleGuardarGasto} className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <input type="date" value={nuevoGasto.fecha} onChange={(e) => setNuevoGasto({...nuevoGasto, fecha: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" required />
-                    <input type="text" placeholder="Concepto" value={nuevoGasto.concepto} onChange={(e) => setNuevoGasto({...nuevoGasto, concepto: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" required />
-                    <input type="text" placeholder="Comprobante" value={nuevoGasto.comprobante} onChange={(e) => setNuevoGasto({...nuevoGasto, comprobante: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" />
-                    <input type="number" step="0.01" placeholder="Monto Q" value={nuevoGasto.monto} onChange={(e) => setNuevoGasto({...nuevoGasto, monto: e.target.value})} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" required />
-                    <button type="submit" className="bg-amber-500 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95">Registrar Gasto</button>
+                    <input type="date" value={nuevoGasto.fecha} onChange={(e) => { setNuevoGasto({...nuevoGasto, fecha: e.target.value}); setDirtyState(true); }} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" required />
+                    <input type="text" placeholder="Concepto" value={nuevoGasto.concepto} onChange={(e) => { setNuevoGasto({...nuevoGasto, concepto: e.target.value}); setDirtyState(true); }} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" required />
+                    <input type="text" placeholder="Comprobante" value={nuevoGasto.comprobante} onChange={(e) => { setNuevoGasto({...nuevoGasto, comprobante: e.target.value}); setDirtyState(true); }} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" />
+                    <input type="number" step="0.01" placeholder="Monto Q" value={nuevoGasto.monto} onChange={(e) => { setNuevoGasto({...nuevoGasto, monto: e.target.value}); setDirtyState(true); }} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" required />
+                    <button type="submit" disabled={isSaving || guardandoGasto} className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95 disabled:opacity-50">
+                      {guardandoGasto ? 'Guardando...' : 'Registrar Gasto'}
+                    </button>
                   </form>
                   <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden">
                     <table className="w-full text-left text-xs font-mono">
@@ -1201,7 +1348,11 @@ export default function App() {
                         <td className="p-3 font-sans text-slate-300">{c.razon_social}</td>
                         <td className="p-3 text-center">
                           <button 
-                            onClick={() => { setClienteSeleccionado(c); setActiveTab('dashboard'); }}
+                            onClick={() => { 
+                              setClienteSeleccionado(c); 
+                              localStorage.setItem('gt_active_client', JSON.stringify(c));
+                              setActiveTab('dashboard'); 
+                            }}
                             className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-3 py-1.5 rounded-lg border border-amber-500/30 cursor-pointer active:scale-95"
                           >
                             Trabajar Empresa
@@ -1218,42 +1369,95 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL NUEVO CLIENTE */}
-      {mostrarModalCliente && createPortal(
-        <div className="fixed inset-0 bg-[#070b14]/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200" onClick={(e) => { if(e.target === e.currentTarget) setMostrarModalCliente(false); }}>
-          <div className="bg-[#0b1329] border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-white relative">
-            <button onClick={() => setMostrarModalCliente(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-900 cursor-pointer"><X className="w-5 h-5" /></button>
-            <h3 className="text-xl font-black mb-4">Nuevo Cliente Fiscal</h3>
+      {/* MODAL CREAR CLIENTE */}
+      {mostrarModalCliente && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b1329] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button 
+              onClick={() => {
+                if (dirtyState && !window.confirm("⚠️ ¿Deseas descartar los cambios del nuevo cliente?")) return;
+                setMostrarModalCliente(false);
+                setDirtyState(false);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-white mb-4">Registrar Nueva Empresa Cliente</h3>
             <form onSubmit={handleCrearCliente} className="space-y-4">
-              <div><label className="text-xs font-bold text-slate-300">NIT *</label><input type="text" value={nuevoCliente.nit} onChange={(e) => setNuevoCliente({...nuevoCliente, nit: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white mt-1 font-mono" required /></div>
-              <div><label className="text-xs font-bold text-slate-300">Razón Social *</label><input type="text" value={nuevoCliente.razon_social} onChange={(e) => setNuevoCliente({...nuevoCliente, razon_social: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white mt-1" required /></div>
-              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs cursor-pointer mt-4 shadow-lg active:scale-95">Guardar Empresa</button>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">NIT SAT</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={nuevoCliente.nit}
+                  onChange={(e) => { setNuevoCliente({...nuevoCliente, nit: e.target.value}); setDirtyState(true); }}
+                  placeholder="Ej: 1234567-8" 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Razón Social</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={nuevoCliente.razon_social}
+                  onChange={(e) => { setNuevoCliente({...nuevoCliente, razon_social: e.target.value}); setDirtyState(true); }}
+                  placeholder="Ej: Comercializadora, S.A." 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none" 
+                />
+              </div>
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button 
+                  type="button" 
+                  onClick={() => setMostrarModalCliente(false)}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={guardandoCliente || isSaving}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-sm shadow-lg disabled:opacity-50 cursor-pointer"
+                >
+                  {guardandoCliente ? 'Guardando...' : 'Crear Cliente'}
+                </button>
+              </div>
             </form>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       {/* MODAL PDF DTE */}
-      {mostrarModalDTE && dteGeneradoInfo && createPortal(
-        <div className="fixed inset-0 bg-[#070b14]/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200" onClick={(e) => { if(e.target === e.currentTarget) setMostrarModalDTE(false); }}>
-          <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-xl w-full shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="text-center border-b border-slate-200 pb-4 mb-4">
-              <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase px-3 py-1 rounded-full">DTE Guatemala</span>
-              <h2 className="text-xl font-black mt-2">{dteGeneradoInfo.emisorNombre}</h2>
-              <p className="text-xs text-slate-500 font-mono">NIT: {dteGeneradoInfo.emisorNit}</p>
+      {mostrarModalDTE && dteGeneradoInfo && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b1329] border border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl p-8 relative print-container">
+            <button 
+              onClick={() => setMostrarModalDTE(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white no-print"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-center space-y-1 mb-6 border-b border-slate-800 pb-4">
+              <h3 className="text-xl font-black text-white">FACTURA ELECTRÓNICA (DTE)</h3>
+              <p className="text-xs text-slate-400">SAT Guatemala - Representación Gráfica</p>
             </div>
-            <div className="bg-slate-50 p-3 rounded-xl text-xs font-mono mb-4">
-              <p className="text-slate-400 text-[10px]">UUID:</p><p className="font-bold">{dteGeneradoInfo.uuid}</p>
+            <div className="space-y-3 font-mono text-xs bg-slate-950 p-5 rounded-xl border border-slate-800 text-slate-300">
+              <div className="flex justify-between"><span>UUID:</span><span className="text-white">{dteGeneradoInfo.uuid}</span></div>
+              <div className="flex justify-between"><span>Emisor:</span><span className="text-white">{dteGeneradoInfo.emisorNombre} (NIT: {dteGeneradoInfo.emisorNit})</span></div>
+              <div className="flex justify-between"><span>Fecha:</span><span className="text-white">{dteGeneradoInfo.fechaEmision}</span></div>
+              <div className="flex justify-between border-t border-slate-800 pt-2 font-bold text-amber-400"><span>Total:</span><span>Q {dteGeneradoInfo.total.toFixed(2)}</span></div>
             </div>
-            <div className="flex justify-end pt-3 border-t border-slate-200 font-mono text-sm font-bold">
-              <span>Total: <span className="text-amber-600">Q {dteGeneradoInfo.total.toFixed(2)}</span></span>
+            <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-slate-800 no-print">
+              <button onClick={() => window.print()} className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-xs cursor-pointer">Imprimir PDF</button>
+              <button onClick={() => setMostrarModalDTE(false)} className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-xs cursor-pointer">Cerrar</button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
     </div>
   );
 }
+
+export default App;
