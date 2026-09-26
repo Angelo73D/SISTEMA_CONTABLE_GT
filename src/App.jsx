@@ -788,7 +788,7 @@ function App() {
                       >
                         <div className="flex justify-between items-start">
                           <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 font-black text-sm">
-                            {c.razon_social.substring(0, 2).toUpperCase()}
+                            {(c.razon_social || 'GT').substring(0, 2).toUpperCase()}
                           </div>
                           {isSelected && <span className="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold rounded-full text-[10px] uppercase">Activa</span>}
                         </div>
