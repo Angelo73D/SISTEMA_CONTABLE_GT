@@ -170,6 +170,32 @@ function App() {
     fetchClientes();
   }, []);
 
+  // Efecto para escuchar cambios en tiempo real desde Supabase
+  useEffect(() => {
+    if (!clienteSeleccionado) return;
+
+    const channel = supabase
+      .channel('realtime-facturas-sat')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', 
+          schema: 'public',
+          table: 'facturas_sat',
+          filter: `cliente_id=eq.${clienteSeleccionado.id}`
+        },
+        (payload) => {
+          console.log('Cambio detectado en tiempo real:', payload);
+          fetchDataCliente(clienteSeleccionado.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clienteSeleccionado]);
+
   useEffect(() => {
     if (clienteSeleccionado) {
       fetchDataCliente(clienteSeleccionado.id);
