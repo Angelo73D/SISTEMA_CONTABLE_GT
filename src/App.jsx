@@ -223,28 +223,10 @@ function App() {
     setLoading(false);
   };
 
- const fetchDataCliente = async (clienteId) => {
+const fetchDataCliente = async (clienteId) => {
     setLoading(true);
     try {
-      // 1. Intentamos cargar empleados (si falla, no rompe la app, solo sigue)
-      try {
-        const { data: empData, error: errEmp } = await supabase.from('empleados').select('*').eq('cliente_id', clienteId);
-        if (!errEmp && empData) setEmpleados(empData);
-        else setEmpleados([]);
-      } catch (e) {
-        setEmpleados([]);
-      }
-
-      // 2. Intentamos cargar caja chica (si falla, no rompe la app, solo sigue)
-      try {
-        const { data: cajaData, error: errCaja } = await supabase.from('caja_chica').select('*').eq('cliente_id', clienteId);
-        if (!errCaja && cajaData) setGastos(cajaData);
-        else setGastos([]);
-      } catch (e) {
-        setGastos([]);
-      }
-
-      // 3. CARGA CRÍTICA: Facturas SAT (Esto es lo que siempre debe mostrarse)
+      // CARGA CRÍTICA: Facturas SAT
       const { data: satData, error: errSat } = await supabase
         .from('facturas_sat')
         .select('*')
@@ -272,6 +254,8 @@ function App() {
         setFacturasXML([]);
       }
 
+      setEmpleados([]);
+      setGastos([]);
       setCuentasPorCobrar([]);
       setCuentasPorPagar([]);
       setActivosFijos([]);
