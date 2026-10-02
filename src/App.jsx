@@ -1381,37 +1381,69 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
                 <div className="bg-[#0b1329] border border-slate-800 p-5 rounded-2xl shadow-xl">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Estado del Despacho</p>
                   <p className="text-xl font-black text-emerald-400 mt-2">100% Operativo</p>
-                  <p className="text-[11px] text-slate-400 font-semibold mt-1">Período Fiscal: {periodoFiltro}</p>
+                  <p className="text-[11px] text-slate-400 font-semibold mt-1">Período Fiscal: {periodoFiltro || 'General'}</p>
                 </div>
               </div>
 
               <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden shadow-xl p-6 space-y-4">
                 <h3 className="font-bold text-white text-sm uppercase tracking-wider">Listado General de Clientes / Empresas del Bufete</h3>
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
-                    <tr><th className="p-3">NIT</th><th className="p-3">Razón Social</th><th className="p-3 text-center">Acción</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {clientes.map(c => (
-                      <tr key={c.id} className="hover:bg-slate-900/40">
-                        <td className="p-3 font-bold text-white">{c.nit}</td>
-                        <td className="p-3 font-sans text-slate-300">{c.razon_social}</td>
-                        <td className="p-3 text-center">
-                          <button 
-                            onClick={() => { 
-                              setClienteSeleccionado(c); 
-                              localStorage.setItem('gt_active_client', JSON.stringify(c));
-                              setActiveTab('dashboard'); 
-                            }}
-                            className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-3 py-1.5 rounded-lg border border-amber-500/30 cursor-pointer active:scale-95"
-                          >
-                            Trabajar Empresa
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                
+                {/* VISTA MÓVIL Y PANTALLA DIVIDIDA (Tarjetas en columna) */}
+                <div className="block md:hidden space-y-3">
+                  {clientes.map(c => (
+                    <div key={c.id} className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
+                      <div>
+                        <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">NIT</span>
+                        <span className="text-sm font-bold font-mono text-white">{c.nit}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Razón Social</span>
+                        <span className="text-xs text-slate-200 font-medium">{c.razon_social}</span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-800 text-center">
+                        <button 
+                          onClick={() => { 
+                            setClienteSeleccionado(c); 
+                            localStorage.setItem('gt_active_client', JSON.stringify(c));
+                            setActiveTab('dashboard'); 
+                          }}
+                          className="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold py-2 px-3 rounded-lg border border-amber-500/30 cursor-pointer active:scale-95 text-xs"
+                        >
+                          Trabajar Empresa
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* VISTA ESCRITORIO / PC (Tabla tradicional limpia) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
+                      <tr><th className="p-3">NIT</th><th className="p-3">Razón Social</th><th className="p-3 text-center">Acción</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {clientes.map(c => (
+                        <tr key={c.id} className="hover:bg-slate-900/40">
+                          <td className="p-3 font-bold text-white">{c.nit}</td>
+                          <td className="p-3 font-sans text-slate-300">{c.razon_social}</td>
+                          <td className="p-3 text-center">
+                            <button 
+                              onClick={() => { 
+                                setClienteSeleccionado(c); 
+                                localStorage.setItem('gt_active_client', JSON.stringify(c));
+                                setActiveTab('dashboard'); 
+                              }}
+                              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-3 py-1.5 rounded-lg border border-amber-500/30 cursor-pointer active:scale-95"
+                            >
+                              Trabajar Empresa
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
