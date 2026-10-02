@@ -457,10 +457,12 @@ function App() {
     setIsSaving(false);
   };
 
-  const facturasFiltradasPeriodo = facturasXML.filter(f => {
-    if (!periodoFiltro) return true;
-    return f.fecha && f.fecha.startsWith(periodoFiltro);
-  });
+const facturasFiltradasPeriodo = facturasXML.filter(f => {
+  // Si no hay un filtro de periodo activo, muestra todas las facturas
+  if (!periodoFiltro || periodoFiltro.trim() === '') return true;
+  // Si hay un periodo, filtra por ese mes
+  return f.fecha && f.fecha.startsWith(periodoFiltro);
+});
 
   const handleExportarDeclaraguateTXT = () => {
     if (!clienteSeleccionado) {
