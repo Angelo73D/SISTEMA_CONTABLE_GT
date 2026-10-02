@@ -226,11 +226,25 @@ function App() {
  const fetchDataCliente = async (clienteId) => {
     setLoading(true);
     try {
-      // Dejamos vacíos empleados y caja chica por ahora para evitar errores 400
-      setEmpleados([]);
-      setGastos([]);
+      // 1. Intentamos cargar empleados (si falla, no rompe la app, solo sigue)
+      try {
+        const { data: empData, error: errEmp } = await supabase.from('empleados').select('*').eq('cliente_id', clienteId);
+        if (!errEmp && empData) setEmpleados(empData);
+        else setEmpleados([]);
+      } catch (e) {
+        setEmpleados([]);
+      }
 
-      // Cargar Facturas SAT (Módulo principal)
+      // 2. Intentamos cargar caja chica (si falla, no rompe la app, solo sigue)
+      try {
+        const { data: cajaData, error: errCaja } = await supabase.from('caja_chica').select('*').eq('cliente_id', clienteId);
+        if (!errCaja && cajaData) setGastos(cajaData);
+        else setGastos([]);
+      } catch (e) {
+        setGastos([]);
+      }
+
+      // 3. CARGA CRÍTICA: Facturas SAT (Esto es lo que siempre debe mostrarse)
       const { data: satData, error: errSat } = await supabase
         .from('facturas_sat')
         .select('*')
@@ -266,7 +280,7 @@ function App() {
 
       setHealthStatus('online');
     } catch (err) {
-      console.error("Error al sincronizar datos críticos del cliente:", err);
+      console.error("Error al sincronizar datos del cliente:", err);
       setHealthStatus('warning');
     }
     setLoading(false);
