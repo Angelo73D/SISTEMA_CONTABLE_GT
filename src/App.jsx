@@ -1526,7 +1526,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
               <div className="flex justify-between"><span>UUID:</span><span className="text-white">{dteGeneradoInfo.uuid}</span></div>
               <div className="flex justify-between"><span>Emisor:</span><span className="text-white">{dteGeneradoInfo.emisorNombre} (NIT: {dteGeneradoInfo.emisorNit})</span></div>
               <div className="flex justify-between"><span>Fecha:</span><span className="text-white">{dteGeneradoInfo.fechaEmision}</span></div>
-              <div className="flex justify-between border-t border-slate-800 pt-2 font-bold text-amber-400"><span>Total:</span><span>Q {dteGeneradoInfo.total.toFixed(2)}</span></div>
+              <div className="flex justify-between border-t border-slate-800 pt-2 font-bold text-amber-400"><span>Total:</span><span>Q {Number(dteGeneradoInfo?.total || 0).toFixed(2)}</span></div>
             </div>
             <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-slate-800 no-print">
               <button onClick={() => window.print()} className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-xs cursor-pointer">Imprimir PDF</button>
