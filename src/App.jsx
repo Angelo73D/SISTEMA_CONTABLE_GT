@@ -226,14 +226,26 @@ function App() {
   const fetchDataCliente = async (clienteId) => {
     setLoading(true);
     try {
-      const { data: empData, error: errEmp } = await supabase.from('empleados').select('*').eq('cliente_id', clienteId);
-      if (errEmp) throw errEmp;
-      setEmpleados(empData || []);
+      // 1. Cargar Empleados (Protegido por si la tabla aún se está sincronizando)
+      try {
+        const { data: empData, error: errEmp } = await supabase.from('empleados').select('*').eq('cliente_id', clienteId);
+        if (!errEmp && empData) setEmpleados(empData);
+        else setEmpleados([]);
+      } catch (e) {
+        console.warn("Aviso: No se pudo cargar empleados, continuando...", e);
+        setEmpleados([]);
+      }
 
-      const { data: cajaData, error: errCaja } = await supabase.from('caja_chica').select('*').eq('cliente_id', clienteId);
-      if (errCaja) throw errCaja;
-      setGastos(cajaData || []);
+      // 2. Cargar Caja Chica / Gastos
+      try {
+        const { data: cajaData, error: errCaja } = await supabase.from('caja_chica').select('*').eq('cliente_id', clienteId);
+        if (!errCaja && cajaData) setGastos(cajaData);
+        else setGastos([]);
+      } catch (e) {
+        setGastos([]);
+      }
 
+      // 3. Cargar Facturas SAT (La parte más importante de tus XML)
       const { data: satData, error: errSat } = await supabase
         .from('facturas_sat')
         .select('*')
@@ -269,7 +281,7 @@ function App() {
 
       setHealthStatus('online');
     } catch (err) {
-      console.error("Error al sincronizar datos del cliente:", err);
+      console.error("Error al sincronizar datos críticos del cliente:", err);
       setHealthStatus('warning');
     }
     setLoading(false);
