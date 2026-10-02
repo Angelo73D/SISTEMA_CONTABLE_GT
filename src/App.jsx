@@ -728,12 +728,37 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
               <Calendar className="w-4 h-4 text-amber-400" />
               <div>
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Período Fiscal</span>
-                <input
-                  type="month"
+                <select
                   value={periodoFiltro}
                   onChange={(e) => setPeriodoFiltro(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
-                />
+                  className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer appearance-none pr-4"
+                >
+                  <option value="" className="bg-slate-900 text-slate-300">Todos (Sin filtro)</option>
+                  {Array.from(
+                    new Set(
+                      facturasXML
+                        .map(f => f.fecha ? f.fecha.substring(0, 7) : null)
+                        .filter(Boolean)
+                    )
+                  )
+                    .sort()
+                    .reverse()
+                    .map(mes => {
+                      let label = mes;
+                      try {
+                        const [ano, nmes] = mes.split('-');
+                        const fechaObj = new Date(ano, nmes - 1, 1);
+                        label = fechaObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                        label = label.charAt(0).toUpperCase() + label.slice(1);
+                      } catch (e) {}
+
+                      return (
+                        <option key={mes} value={mes} className="bg-slate-900 text-white font-medium">
+                          {label} ({mes})
+                        </option>
+                      );
+                    })}
+                </select>
               </div>
             </div>
 
