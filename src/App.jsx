@@ -1973,6 +1973,121 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'libros_iva' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            📚
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Libros Legales de IVA (SAT)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control y consolidado mensual de Compras y Ventas afectas al Impuesto al Valor Agregado.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para exportar reporte de Libros IVA a Excel/PDF en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>📥 Exportar Libros IVA (SAT)</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen IVA */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA Debito (Ventas Mes)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. 54,120.00</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📈</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA Credito (Compras Mes)</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">Q. 38,400.00</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📉</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA por Pagar (Aprox.)</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. 15,720.00</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">⚖️</div>
+      </div>
+    </div>
+
+    {/* Tabla Consolidada de Libros IVA */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Consolidado Mensual de Operaciones IVA
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Filtrar por período o tipo..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Período Fiscal</th>
+              <th className="py-3.5 px-5">Tipo de Libro</th>
+              <th className="py-3.5 px-4 text-right">Base Netas (Q)</th>
+              <th className="py-3.5 px-4 text-right">Monto IVA (Q)</th>
+              <th className="py-3.5 px-4 text-right">Total Documentos (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado Declaración</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">Septiembre 2026</td>
+              <td className="py-4 px-5 text-emerald-400 font-semibold">Libro de Ventas y Servicios</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 451,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 54,120.00</td>
+              <td className="py-4 px-4 text-right font-mono">1,240 DTEs</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Consolidado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">Septiembre 2026</td>
+              <td className="py-4 px-5 text-blue-400 font-semibold">Libro de Compras y Servicios</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 320,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-blue-400">Q. 38,400.00</td>
+              <td className="py-4 px-4 text-right font-mono">415 Facturas</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Consolidado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">Agosto 2026</td>
+              <td className="py-4 px-5 text-emerald-400 font-semibold">Libro de Ventas y Servicios</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 410,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 49,200.00</td>
+              <td className="py-4 px-4 text-right font-mono">1,110 DTEs</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg text-[10px] font-bold">Presentado / Declarado</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
