@@ -2202,6 +2202,115 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'sat' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🏛️
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Conexión SAT / Portal FEL</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Sincronización de documentos tributarios electrónicos y validación de certificación FEL.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para sincronizar documentos con el portal SAT en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>🔄 Sincronizar con Portal SAT</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen SAT */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">DTEs Certificados (Mes)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">1,240 DTEs</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">✅</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado de Conexión FEL</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">Conectado (API)</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🔌</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Errores / Rechazos SAT</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">0 Errores</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">🛡️</div>
+      </div>
+    </div>
+
+    {/* Tabla de Registros Sincronizados SAT */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Últimos Documentos Certificados en el Sistema FEL
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar por UUID o emisor..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">UUID / Código de Autorización</th>
+              <th className="py-3.5 px-5">Tipo Documento</th>
+              <th className="py-3.5 px-4 text-center">Fecha Certificación</th>
+              <th className="py-3.5 px-4 text-right">Monto Total (Q)</th>
+              <th className="py-3.5 px-5 text-center">Certificador FEL</th>
+              <th className="py-3.5 px-5 text-center">Estado SAT</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold text-[11px]">
+                A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+              </td>
+              <td className="py-4 px-5 text-white font-bold">Factura Electrónica (FCAL)</td>
+              <td className="py-4 px-4 text-center text-slate-400">03/10/2026 14:22</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 4,500.00</td>
+              <td className="py-4 px-5 text-center text-slate-300">INFILE / ECOFACTURA</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Certificado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold text-[11px]">
+                98765432-10EF-ABCD-EF12-34567890ABCD
+              </td>
+              <td className="py-4 px-5 text-white font-bold">Nota de Crédito (NCRE)</td>
+              <td className="py-4 px-4 text-center text-slate-400">02/10/2026 09:15</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. 350.00</td>
+              <td className="py-4 px-5 text-center text-slate-300">INFILE / ECOFACTURA</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Certificado</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
