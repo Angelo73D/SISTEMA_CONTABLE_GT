@@ -1009,6 +1009,253 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             </div>
           )}
 
+{activeTab === 'inventarios' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            📦
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Inventarios y Kardex</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control físico y valorizado de existencias, entradas y salidas de mercancía.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para registrar nuevo producto o movimiento en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nuevo Producto / Movimiento</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Rápido */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total SKUs Activos</p>
+          <h3 className="text-2xl font-black text-white mt-1">24</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📋</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor Total Inventario</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. 84,350.00</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💰</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alertas Stock Bajo</p>
+          <h3 className="text-2xl font-black text-rose-400 mt-1">2 Productos</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">⚠️</div>
+      </div>
+    </div>
+
+    {/* Tabla del Kardex / Inventario */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📊</span> Existencias y Movimientos Recientes
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar producto por código o nombre..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Código SKU</th>
+              <th className="py-3.5 px-5">Descripción del Producto</th>
+              <th className="py-3.5 px-5">Categoría</th>
+              <th className="py-3.5 px-4 text-center">Stock Actual</th>
+              <th className="py-3.5 px-4 text-right">Costo Unitario (Q)</th>
+              <th className="py-3.5 px-4 text-right">Valor Total (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-mono font-semibold text-amber-400">PRD-001</td>
+              <td className="py-4 px-5 font-bold text-white">Papel Bond 80g (Caja x 5 Resmas)</td>
+              <td className="py-4 px-5 text-slate-400">Suministros de Oficina</td>
+              <td className="py-4 px-4 text-center font-bold text-white">145</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 125.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 18,125.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Normal</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-mono font-semibold text-amber-400">PRD-002</td>
+              <td className="py-4 px-5 font-bold text-white">Tóner HP LaserJet Negro Original</td>
+              <td className="py-4 px-5 text-slate-400">Tecnología / Consumibles</td>
+              <td className="py-4 px-4 text-center font-bold text-rose-400">3</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 650.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 1,950.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-[10px] font-bold">Stock Bajo</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-mono font-semibold text-amber-400">PRD-003</td>
+              <td className="py-4 px-5 font-bold text-white">Silla Ejecutiva Ergonómica Malla</td>
+              <td className="py-4 px-5 text-slate-400">Mobiliario</td>
+              <td className="py-4 px-4 text-center font-bold text-white">28</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 2,300.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 64,400.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Normal</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'cuentas_corrientes' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            📑
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Cuentas Corrientes y Proveedores (CXP)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de saldos por pagar, plazos de crédito y gestión de abonos a proveedores.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para registrar nueva cuenta o factura por pagar en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nueva Factura por Pagar</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Financiero CXP */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total por Pagar (CXP)</p>
+          <h3 className="text-2xl font-black text-rose-400 mt-1">Q. 42,800.00</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">💳</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Por Vencer (30 Días)</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. 28,500.00</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">⏳</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vencidas / Morosas</p>
+          <h3 className="text-2xl font-black text-rose-500 mt-1">Q. 14,300.00</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-500 border border-rose-500/20 text-xl">⚠️</div>
+      </div>
+    </div>
+
+    {/* Tabla de Cuentas por Pagar */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Listado de Proveedores y Documentos Pendientes
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar proveedor o NIT..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">NIT / Proveedor</th>
+              <th className="py-3.5 px-5">No. Documento / Factura</th>
+              <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
+              <th className="py-3.5 px-4 text-center">Fecha Vencimiento</th>
+              <th className="py-3.5 px-4 text-right">Monto Original (Q)</th>
+              <th className="py-3.5 px-4 text-right">Saldo Pendiente (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Distribuidora Comercial del Norte, S.A.</p>
+                <p className="text-[11px] text-slate-400">NIT: 5849382-9</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">FIB-99281</td>
+              <td className="py-4 px-4 text-center text-slate-400">15/09/2026</td>
+              <td className="py-4 px-4 text-center text-slate-300">15/10/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 18,500.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-white">Q. 18,500.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg text-[10px] font-bold">Por Vencer</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Importadora de Papel y Suministros GT</p>
+                <p className="text-[11px] text-slate-400">NIT: 1294851-4</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">FAC-44810</td>
+              <td className="py-4 px-4 text-center text-slate-400">01/08/2026</td>
+              <td className="py-4 px-4 text-center text-rose-400 font-bold">01/09/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 14,300.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. 14,300.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-[10px] font-bold">Vencida</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Tecnología y Soluciones Corporativas</p>
+                <p className="text-[11px] text-slate-400">NIT: 9831920-1</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">ESP-00912</td>
+              <td className="py-4 px-4 text-center text-slate-400">20/09/2026</td>
+              <td className="py-4 px-4 text-center text-slate-300">20/11/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 10,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 10,000.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Al Día</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
