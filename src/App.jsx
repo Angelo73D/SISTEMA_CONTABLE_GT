@@ -1367,6 +1367,113 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'estados' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            📊
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Estados Financieros</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Generación de Estado de Resultados, Balance General y reportes financieros bajo normativa.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para exportar o generar reporte financiero en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>📥 Generar / Exportar Reporte</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Financiero Clave */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ingresos Totales (YTD)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. 450,200.00</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📈</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Costos y Gastos Operativos</p>
+          <h3 className="text-2xl font-black text-rose-400 mt-1">Q. 312,800.00</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">📉</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Utilidad Neta del Ejercicio</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. 137,400.00</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">💎</div>
+      </div>
+    </div>
+
+    {/* Vista de Estado de Resultados Resumido */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📑</span> Estado de Resultados al Cierre del Periodo (Quetzales)
+        </h3>
+        <div className="text-xs text-slate-400 font-mono">Período Fiscal: 2026</div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Rubro / Cuenta Contable</th>
+              <th className="py-3.5 px-5">Clasificación</th>
+              <th className="py-3.5 px-4 text-right">Saldo Acumulado (Q)</th>
+              <th className="py-3.5 px-4 text-right">% sobre Ingresos</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">(-) Ingresos Brutos por Ventas y Servicios</td>
+              <td className="py-4 px-5 text-slate-400">Ingresos Operativos</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 450,200.00</td>
+              <td className="py-4 px-4 text-right font-mono text-slate-300">100.0%</td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">(-) Costo de Ventas / Mercadería Vendida</td>
+              <td className="py-4 px-5 text-slate-400">Costos Directos</td>
+              <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 195,000.00</td>
+              <td className="py-4 px-4 text-right font-mono text-slate-300">43.3%</td>
+            </tr>
+            <tr className="bg-slate-950/20 font-bold text-white">
+              <td className="py-3.5 px-5">= Utilidad Bruta</td>
+              <td className="py-3.5 px-5 text-amber-400">Resultado Parcial</td>
+              <td className="py-3.5 px-4 text-right font-mono text-amber-400">Q. 255,200.00</td>
+              <td className="py-3.5 px-4 text-right font-mono text-amber-400">56.7%</td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">(-) Gastos de Operación (Administración y Ventas)</td>
+              <td className="py-4 px-5 text-slate-400">Gastos Indirectos</td>
+              <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 117,800.00</td>
+              <td className="py-4 px-4 text-right font-mono text-slate-300">26.2%</td>
+            </tr>
+            <tr className="bg-slate-950/40 font-bold text-white text-sm">
+              <td className="py-4 px-5">= UTILIDAD NETA ANTES DE IMPUESTOS</td>
+              <td className="py-4 px-5 text-emerald-400">Resultado Final</td>
+              <td className="py-4 px-4 text-right font-mono text-emerald-400">Q. 137,400.00</td>
+              <td className="py-4 px-4 text-right font-mono text-emerald-400">30.5%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
