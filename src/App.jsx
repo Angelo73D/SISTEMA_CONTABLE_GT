@@ -809,6 +809,28 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
                     <span>Continuar con {clienteSeleccionado?.razon_social || 'Empresa'}</span>
                   </button>
                 </div>
+
+                <button 
+                  onClick={() => setActiveTab('inventarios')} 
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                    activeTab === 'inventarios' 
+                      ? 'bg-amber-500 text-[#0b1329] border-amber-500' 
+                      : 'bg-[#0b1329] text-amber-400 hover:bg-slate-900 border-amber-500/30'
+                  }`}
+                >
+                  📦 Inventarios
+                </button>
+
+                <button 
+                  onClick={() => setActiveTab('cuentas_corrientes')} 
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                    activeTab === 'cuentas_corrientes' 
+                      ? 'bg-amber-500 text-[#0b1329] border-amber-500' 
+                      : 'bg-[#0b1329] text-amber-400 hover:bg-slate-900 border-amber-500/30'
+                  }`}
+                >
+                  📑 Cuentas Corrientes (CXP)
+                </button>
               </div>
 
               {/* TARJETAS DE CARTERA DE CLIENTES Y ÚLTIMA ACTIVIDAD */}
@@ -1230,6 +1252,174 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
               )}
             </div>
           )}
+
+{/* CUENTAS CORRIENTES POR PROVEEDOR */}
+{activeTab === 'cuentas_corrientes' && (
+  <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 className="text-2xl font-black text-white">Cuentas Corrientes por Proveedor</h2>
+        <p className="text-xs text-slate-400 mt-0.5">Control y seguimiento de saldos pendientes de pago por facturas de compras SAT</p>
+      </div>
+      {clienteSeleccionado && (
+        <div className="bg-[#0b1329] border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-amber-400">
+          Deuda Total Proveedores: Q {
+            proveedoresCXP
+              .reduce((acc, p) => acc + Number(p.saldo_pendiente || 0), 0)
+              .toFixed(2)
+          }
+        </div>
+      )}
+    </div>
+
+    {!clienteSeleccionado ? (
+      <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
+        <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
+        <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus cuentas corrientes</h3>
+      </div>
+    ) : (
+      <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
+              <tr>
+                <th className="p-3">Proveedor / NIT</th>
+                <th className="p-3">Factura / Serie</th>
+                <th className="p-3">Fecha Emisión</th>
+                <th className="p-3 text-right">Monto Total</th>
+                <th className="p-3 text-right">Saldo Pendiente</th>
+                <th className="p-3 text-center">Estado</th>
+                <th className="p-3 text-center">Acción / Abono</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {proveedoresCXP && proveedoresCXP.length > 0 ? (
+                proveedoresCXP.map(cxp => (
+                  <tr key={cxp.id} className="hover:bg-slate-900/40">
+                    <td className="p-3">
+                      <div className="font-sans font-bold text-white">{cxp.nombre_proveedor || 'Proveedor General'}</div>
+                      <div className="text-[10px] text-slate-400">{cxp.nit_proveedor}</div>
+                    </td>
+                    <td className="p-3 text-slate-300">{cxp.numero_factura || 'N/A'}</td>
+                    <td className="p-3 text-slate-400 font-sans">{cxp.fecha}</td>
+                    <td className="p-3 text-right text-slate-200">Q {Number(cxp.monto_total || 0).toFixed(2)}</td>
+                    <td className="p-3 text-right font-bold text-amber-400">Q {Number(cxp.saldo_pendiente || 0).toFixed(2)}</td>
+                    <td className="p-3 text-center">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-sans font-bold ${
+                        Number(cxp.saldo_pendiente) <= 0 
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' 
+                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                      }`}>
+                        {Number(cxp.saldo_pendiente) <= 0 ? 'Pagado ✅' : 'Pendiente ⏳'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <button 
+                        onClick={() => registrarAbonoCXP && registrarAbonoCXP(cxp.id)}
+                        className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-3 py-1.5 rounded-lg border border-amber-500/30 cursor-pointer active:scale-95 text-[11px]"
+                      >
+                        Abonar / Pagar
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="p-8 text-center text-slate-500 font-sans">
+                    No hay cuentas corrientes o facturas por pagar registradas para este cliente.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
+{/* MÓDULO DE INVENTARIOS Y CONTROL DE MERCADERÍAS */}
+{activeTab === 'inventarios' && (
+  <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 className="text-2xl font-black text-white">Inventarios y Control de Mercaderías</h2>
+        <p className="text-xs text-slate-400 mt-0.5">Control físico y valoración de stock conectado con compras y ventas DTE</p>
+      </div>
+      {clienteSeleccionado && (
+        <div className="bg-[#0b1329] border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-amber-400">
+          Valor Total Inventario: Q {
+            inventarioItems && inventarioItems.length > 0
+              ? inventarioItems.reduce((acc, item) => acc + (Number(item.stock || 0) * Number(item.costo_unitario || 0)), 0).toFixed(2)
+              : '0.00'
+          }
+        </div>
+      )}
+    </div>
+
+    {!clienteSeleccionado ? (
+      <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
+        <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
+        <h3 className="text-base font-bold text-white">Seleccione un cliente para ver su inventario de mercaderías</h3>
+      </div>
+    ) : (
+      <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
+              <tr>
+                <th className="p-3">Código / SKU</th>
+                <th className="p-3">Descripción del Producto</th>
+                <th className="p-3 text-center">Stock Actual</th>
+                <th className="p-3 text-right">Costo Unitario</th>
+                <th className="p-3 text-right">Valor Total</th>
+                <th className="p-3 text-center">Estado Stock</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {inventarioItems && inventarioItems.length > 0 ? (
+                inventarioItems.map(item => {
+                  const stock = Number(item.stock || 0);
+                  const costo = Number(item.costo_unitario || 0);
+                  const totalValor = stock * costo;
+                  const esStockBajo = stock <= Number(item.stock_minimo || 5);
+
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-900/40">
+                      <td className="p-3 text-slate-300 font-bold">{item.sku || 'SKU-00X'}</td>
+                      <td className="p-3">
+                        <div className="font-sans font-bold text-white">{item.descripcion || 'Producto de Inventario'}</div>
+                        <div className="text-[10px] text-slate-400">Categoría general</div>
+                      </td>
+                      <td className="p-3 text-center font-bold text-slate-200">{stock} unids.</td>
+                      <td className="p-3 text-right text-slate-300">Q {costo.toFixed(2)}</td>
+                      <td className="p-3 text-right font-bold text-amber-400">Q {totalValor.toFixed(2)}</td>
+                      <td className="p-3 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-sans font-bold ${
+                          esStockBajo 
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' 
+                            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        }`}>
+                          {esStockBajo ? 'Stock Bajo ⚠️'  : 'Óptimo ✅'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500 font-sans">
+                    No hay productos registrados en el inventario para este cliente. Se poblará automáticamente con las compras XML.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
           {/* ACTIVOS FIJOS */}
           {activeTab === 'activos' && (
