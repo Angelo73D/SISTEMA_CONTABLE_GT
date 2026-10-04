@@ -14,5 +14,12 @@
     border: none !important;
     box-shadow: none !important;
     background: white !important;
+    color: black !important;
+  }
+  /* Asegura que los textos dentro del contenedor impreso se adapten a fondo blanco */
+  .print-container span, 
+  .print-container h3, 
+  .print-container p {
+    color: black !important;
   }
 }
