@@ -1474,6 +1474,134 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'nomina' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            👥
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Nómina y Planilla de Salarios</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de sueldos, deducciones laborales (IGSS) y retenciones aplicadas.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para registrar nuevo empleado o calcular planilla en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nuevo Empleado / Planilla</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Nómina */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Planilla Mensual</p>
+          <h3 className="text-2xl font-black text-white mt-1">Q. 65,400.00</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">💼</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aporte Patronal e IGSS</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. 8,150.00</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🛡️</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Colaboradores Activos</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">12 Empleados</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">👤</div>
+      </div>
+    </div>
+
+    {/* Tabla de Empleados y Nómina */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Listado de Colaboradores y Sueldos del Periodo
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar colaborador o puesto..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Colaborador / DPI</th>
+              <th className="py-3.5 px-5">Puesto / Departamento</th>
+              <th className="py-3.5 px-4 text-right">Salario Ordinario (Q)</th>
+              <th className="py-3.5 px-4 text-right">Bonificación Ley (Q)</th>
+              <th className="py-3.5 px-4 text-right">Deducción IGSS (Q)</th>
+              <th className="py-3.5 px-4 text-right">Líquido a Recibir (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Carlos Enrique Morales</p>
+                <p className="text-[11px] text-slate-400">DPI: 2548 19283 0101</p>
+              </td>
+              <td className="py-4 px-5 text-slate-400">Gerente de Finanzas / Administración</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 8,500.00</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 250.00</td>
+              <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 403.75</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 8,346.25</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Pagado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Ana Lucía Castillo</p>
+                <p className="text-[11px] text-slate-400">DPI: 1928 38472 0101</p>
+              </td>
+              <td className="py-4 px-5 text-slate-400">Contadora General / Auditoría</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 6,800.00</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 250.00</td>
+              <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 323.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 6,727.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Pagado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Mario Roberto Juárez</p>
+                <p className="text-[11px] text-slate-400">DPI: 3019 28471 0101</p>
+              </td>
+              <td className="py-4 px-5 text-slate-400">Encargado de Bodega e Inventarios</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 4,500.00</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 250.00</td>
+              <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 213.75</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 4,536.25</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Pagado</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
