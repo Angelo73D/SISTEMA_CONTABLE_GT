@@ -2311,6 +2311,111 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'cierres' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🔒
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Cierres Contables y Fiscales</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Gestión de cierres de período, auditoría interna y consolidación de estados financieros.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para iniciar proceso de cierre mensual en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>🔐 Iniciar Cierre de Período</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Cierres */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Período Contable Actual</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Septiembre 2026</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📅</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado de Auditoría</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">En Revisión</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🔍</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Último Cierre Anual</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Ejercicio 2025</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📈</div>
+      </div>
+    </div>
+
+    {/* Tabla de Historial de Cierres */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Historial de Cierres Mensuales y Anuales
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Filtrar por año o período..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Período / Ejercicio</th>
+              <th className="py-3.5 px-5">Tipo de Cierre</th>
+              <th className="py-3.5 px-4 text-center">Fecha de Cierre</th>
+              <th className="py-3.5 px-4 text-right">Utilidad Neta (Q)</th>
+              <th className="py-3.5 px-5 text-center">Responsable</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">Agosto 2026</td>
+              <td className="py-4 px-5 text-blue-400 font-semibold">Cierre Mensual</td>
+              <td className="py-4 px-4 text-center text-slate-400">05/09/2026</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 68,450.00</td>
+              <td className="py-4 px-5 text-center text-slate-300">Ángel Duarte (Admin)</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Cerrado / Bloqueado</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5 font-bold text-white">Ejercicio Fiscal 2025</td>
+              <td className="py-4 px-5 text-amber-400 font-semibold">Cierre Anual</td>
+              <td className="py-4 px-4 text-center text-slate-400">15/01/2026</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 742,100.00</td>
+              <td className="py-4 px-5 text-center text-slate-300">Ángel Duarte (Admin)</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Auditado y Presentado</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
