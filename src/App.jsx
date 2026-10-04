@@ -131,7 +131,7 @@ function App() {
   const [activosFijos, setActivosFijos] = useState([]);
   const [movimientosBancos, setMovimientosBancos] = useState([]);
 
-  // Estado para Vista Previa / Representación Gráfica DTE
+// Estado para Vista Previa / Representación Gráfica DTE
   const [mostrarModalDTE, setMostrarModalDTE] = useState(false);
   const [dteGeneradoInfo, setDteGeneradoInfo] = useState(null);
 
@@ -223,7 +223,7 @@ function App() {
     setLoading(false);
   };
 
-const fetchDataCliente = async (clienteId) => {
+  const fetchDataCliente = async (clienteId) => {
     setLoading(true);
     try {
       // CARGA CRÍTICA: Facturas SAT
@@ -281,7 +281,7 @@ const fetchDataCliente = async (clienteId) => {
       }
       setSyncStatus({ 
         loading: false, 
-        message: `Sincronización exitosa: Datos actualizados para ${clienteSeleccionado?.razon_social || 'la firma'}.`, 
+        message: `Sincronización exitosa: Datos actualizados para ${clienteSeleccionado?.razon_social || clienteSeleccionado?.nombre || 'la firma'}.`, 
         type: 'success' 
       });
       setTimeout(() => setSyncStatus({ loading: false, message: '', type: '' }), 5000);
@@ -441,7 +441,8 @@ const fetchDataCliente = async (clienteId) => {
     const { error } = await supabase.from('facturas_sat').upsert(registros, { onConflict: 'uuid' });
 
     if (!error) {
-      setMensajeSAT(`¡Facturas guardadas con éxito para ${clienteSeleccionado.razon_social} (NIT: ${clienteSeleccionado.nit})!`);
+      const nombreCliente = clienteSeleccionado.razon_social || clienteSeleccionado.nombre;
+      setMensajeSAT(`¡Facturas guardadas con éxito para ${nombreCliente} (NIT: ${clienteSeleccionado.nit})!`);
       setFacturasXML(prev => prev.map(f => ({ ...f, guardado: true })));
     } else {
       console.error("Error al guardar en Supabase:", error);
@@ -452,12 +453,10 @@ const fetchDataCliente = async (clienteId) => {
     setIsSaving(false);
   };
 
-const facturasFiltradasPeriodo = facturasXML.filter(f => {
-  // Si no hay un filtro de periodo activo, muestra todas las facturas
-  if (!periodoFiltro || periodoFiltro.trim() === '') return true;
-  // Si hay un periodo, filtra por ese mes
-  return f.fecha && f.fecha.startsWith(periodoFiltro);
-});
+  const facturasFiltradasPeriodo = facturasXML.filter(f => {
+    if (!periodoFiltro || periodoFiltro.trim() === '') return true;
+    return f.fecha && f.fecha.startsWith(periodoFiltro);
+  });
 
   const handleExportarDeclaraguateTXT = () => {
     if (!clienteSeleccionado) {
@@ -469,8 +468,9 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
       return;
     }
 
+    const nombreCliente = clienteSeleccionado?.razon_social || clienteSeleccionado?.nombre;
     let contenidoTXT = `LIBRO DE COMPRAS Y SERVICIOS RECIBIDOS\n`;
-    contenidoTXT += `PERÍODO: ${periodoFiltro} | CLIENTE: ${clienteSeleccionado?.razon_social} (NIT: ${clienteSeleccionado?.nit})\n`;
+    contenidoTXT += `PERÍODO: ${periodoFiltro} | CLIENTE: ${nombreCliente} (NIT: ${clienteSeleccionado?.nit})\n`;
     contenidoTXT += `---------------------------------------------------------------------------------------------------\n`;
     contenidoTXT += `FECHA\tNIT PROVEEDOR\tNOMBRE PROVEEDOR\tSERIE\tNUMERO\tBASE (Q)\tIVA (Q)\tTOTAL (Q)\n`;
     contenidoTXT += `---------------------------------------------------------------------------------------------------\n`;
@@ -567,7 +567,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
       numero: Math.floor(Math.random() * 899999 + 100000),
       fechaEmision: '2026-09-25 14:30:00',
       emisorNit: clienteSeleccionado?.nit || '12345678',
-      emisorNombre: clienteSeleccionado?.razon_social || 'Empresa Pruebas, S.A.',
+      emisorNombre: clienteSeleccionado?.razon_social || clienteSeleccionado?.nombre || 'Empresa Pruebas, S.A.',
       items: itemsFactura,
       base: baseImponibleFactura,
       iva: ivaFactura,
@@ -579,8 +579,8 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
 
   return (
     <div className="flex h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
-
-      {/* 1. ESTILOS GLOBALES @media print PARA IMPRESIÓN PROFESIONAL */}
+      
+{/* 1. ESTILOS GLOBALES @media print PARA IMPRESIÓN PROFESIONAL */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           aside, header, button, .no-print {
@@ -602,7 +602,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
         }
       `}} />
 
-      {/* BARRA LATERAL MODERNA CON EXPANSIÓN POR HOVER Y SCROLLBAR INVISIBLE */}
+{/* BARRA LATERAL MODERNA CON EXPANSIÓN POR HOVER Y SCROLLBAR INVISIBLE */}
       <aside className="relative z-30 flex flex-col w-20 hover:w-72 bg-[#0b1329] border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl group overflow-hidden no-print">
         
         {/* Cabecera / Logo */}
@@ -615,6 +615,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Enterprise GTQ</p>
           </div>
         </div>
+
 {/* Enlaces de Navegación con scrollbar invisible */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {[
@@ -628,13 +629,13 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             { id: 'bancos', label: 'Conciliación Bancaria', icon: Landmark },
             { id: 'activos', label: 'Activos Fijos y Dep.', icon: Briefcase },
             { id: 'estados', label: 'Estados Financieros', icon: PieChart },
-            { id: 'reportes_avanzados', label: 'Reportes y Exportación', icon: FileSpreadsheet }, // <-- ¡Agregado aquí!
+            { id: 'reportes_avanzados', label: 'Reportes y Exportación', icon: FileSpreadsheet },
             { id: 'nomina', label: 'Nómina y Planilla', icon: Users },
             { id: 'cajachica', label: 'Caja Chica y Gastos', icon: Wallet },
             { id: 'control_contador', label: 'Control Global (Contador)', icon: Activity },
             { id: 'inventarios', label: 'Inventarios (Kardex)', icon: Package },
             { id: 'cuentas_corrientes', label: 'Cuentas Corrientes (CXP)', icon: FileSpreadsheet },
-            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Building2 }, // <-- Icono actualizado para diferenciarlo
+            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Building2 },
             { id: 'cierres', label: 'Cierres Contables y Fiscales', icon: Lock },
             { id: 'configuracion', label: 'Configuración General', icon: Settings },
           ].map((item) => {
