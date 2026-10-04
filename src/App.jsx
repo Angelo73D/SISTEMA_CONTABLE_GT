@@ -621,7 +621,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             { id: 'inicio', label: 'Inicio / Bienvenida', icon: Home },
             { id: 'dashboard', label: 'Panel Gerencial', icon: LayoutDashboard },
             { id: 'facturacion', label: 'Emisión DTE (Ventas)', icon: CreditCard },
-            { id: 'sat', label: 'Ingestión XML (SAT)', icon: FileText },
+            { id: 'ingestion_sat', label: 'Ingestión XML (SAT)', icon: FileText },
             { id: 'libros_iva', label: 'Libros Legales IVA', icon: Scale },
             { id: 'retenciones', label: 'Retenciones IVA / ISR', icon: ShieldCheck },
             { id: 'cxc_cxp', label: 'Cuentas CXC y CXP', icon: Layers },
@@ -644,7 +644,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
                 key={item.id}
                 onClick={() => {
                   if (dirtyState) {
-                    if (!window.confirm("⚠️️ Tienes cambios sin guardar. ¿Deseas descartarlos y cambiar de sección?")) return;
+                    if (!window.confirm("⚠ Tienes cambios sin guardar. ¿Deseas descartarlos y cambiar de sección?")) return;
                     setDirtyState(false);
                   }
                   setActiveTab(item.id);
