@@ -1845,6 +1845,134 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
   </div>
 )}
 
+{activeTab === 'cxc_cxp' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🤝
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Cuentas por Cobrar y Clientes (CXC)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de saldos por cobrar, cartera de clientes y gestión de abonos.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Función para registrar nueva cuenta por cobrar en desarrollo")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nueva Factura por Cobrar</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Financiero CXC */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total por Cobrar (CXC)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. 84,200.00</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💰</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Al Día (Sin Vencer)</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">Q. 65,000.00</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">⏳</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vencidas / En Mora</p>
+          <h3 className="text-2xl font-black text-rose-500 mt-1">Q. 19,200.00</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-500 border border-rose-500/20 text-xl">⚠️</div>
+      </div>
+    </div>
+
+    {/* Tabla de Cuentas por Cobrar */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Listado de Clientes y Documentos por Cobrar
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar cliente o NIT..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">NIT / Cliente</th>
+              <th className="py-3.5 px-5">No. Documento / Factura</th>
+              <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
+              <th className="py-3.5 px-4 text-center">Fecha Vencimiento</th>
+              <th className="py-3.5 px-4 text-right">Monto Original (Q)</th>
+              <th className="py-3.5 px-4 text-right">Saldo Pendiente (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Comercializadora San Cristóbal, S.A.</p>
+                <p className="text-[11px] text-slate-400">NIT: 7894123-0</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">FEL-88392</td>
+              <td className="py-4 px-4 text-center text-slate-400">10/09/2026</td>
+              <td className="py-4 px-4 text-center text-slate-300">10/10/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 35,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-white">Q. 35,000.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-bold">Al Día</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Inversiones y Servicios del Valle</p>
+                <p className="text-[11px] text-slate-400">NIT: 4561239-8</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">FEL-77102</td>
+              <td className="py-4 px-4 text-center text-slate-400">05/08/2026</td>
+              <td className="py-4 px-4 text-center text-rose-400 font-bold">05/09/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 19,200.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. 19,200.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-[10px] font-bold">Vencida</span>
+              </td>
+            </tr>
+            <tr className="hover:bg-slate-800/40 transition">
+              <td className="py-4 px-5">
+                <p className="font-bold text-white">Supermercados La Económica</p>
+                <p className="text-[11px] text-slate-400">NIT: 9012345-1</p>
+              </td>
+              <td className="py-4 px-5 font-mono text-amber-400 font-semibold">FEL-91024</td>
+              <td className="py-4 px-4 text-center text-slate-400">25/09/2026</td>
+              <td className="py-4 px-4 text-center text-slate-300">25/10/2026</td>
+              <td className="py-4 px-4 text-right font-mono">Q. 30,000.00</td>
+              <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 30,000.00</td>
+              <td className="py-4 px-5 text-center">
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Al Día</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
             <div className="space-y-6 animate-in fade-in duration-300">
