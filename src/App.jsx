@@ -7,7 +7,7 @@ import {
   CreditCard, Plus, Trash2, Search, FileCode2, Receipt, Scale, Download, Calendar,
   LayoutDashboard, ShieldCheck, Printer, ArrowUpRight, ArrowDownRight, DollarSign,
   Briefcase, TrendingUp, Layers, PieChart, Landmark, Sparkles, Activity, Home, Clock,
-  AlertCircle, CheckCircle, HelpCircle, Loader2, AlertTriangle, ShieldAlert
+  AlertCircle, CheckCircle, HelpCircle, Loader2, AlertTriangle, ShieldAlert, Package, FileSpreadsheet 
 } from 'lucide-react';
 
 function App() {
@@ -671,7 +671,7 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
           </button>
         </div>
       </aside>
-      
+
       {/* ÁREA PRINCIPAL */}
       <div className="flex-1 flex flex-col overflow-hidden bg-[#070b14]">
         
