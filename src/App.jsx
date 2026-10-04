@@ -7,7 +7,7 @@ import {
   CreditCard, Plus, Trash2, Search, FileCode2, Receipt, Scale, Download, Calendar,
   LayoutDashboard, ShieldCheck, Printer, ArrowUpRight, ArrowDownRight, DollarSign,
   Briefcase, TrendingUp, Layers, PieChart, Landmark, Sparkles, Activity, Home, Clock,
-  AlertCircle, CheckCircle, HelpCircle, Loader2, AlertTriangle, ShieldAlert, Package, FileSpreadsheet 
+  AlertCircle, CheckCircle, HelpCircle, Loader2, AlertTriangle, ShieldAlert, Package, FileSpreadsheet, Lock, Settings,
 } from 'lucide-react';
 
 function App() {
