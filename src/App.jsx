@@ -628,12 +628,13 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             { id: 'bancos', label: 'Conciliación Bancaria', icon: Landmark },
             { id: 'activos', label: 'Activos Fijos y Dep.', icon: Briefcase },
             { id: 'estados', label: 'Estados Financieros', icon: PieChart },
+            { id: 'reportes_avanzados', label: 'Reportes y Exportación', icon: FileSpreadsheet }, // <-- ¡Agregado aquí!
             { id: 'nomina', label: 'Nómina y Planilla', icon: Users },
             { id: 'cajachica', label: 'Caja Chica y Gastos', icon: Wallet },
             { id: 'control_contador', label: 'Control Global (Contador)', icon: Activity },
             { id: 'inventarios', label: 'Inventarios (Kardex)', icon: Package },
             { id: 'cuentas_corrientes', label: 'Cuentas Corrientes (CXP)', icon: FileSpreadsheet },
-            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Landmark },
+            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Building2 }, // <-- Icono actualizado para diferenciarlo
             { id: 'cierres', label: 'Cierres Contables y Fiscales', icon: Lock },
             { id: 'configuracion', label: 'Configuración General', icon: Settings },
           ].map((item) => {
@@ -2459,6 +2460,530 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'reportes_avanzados' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            📑
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Reportes y Exportación Avanzada</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Generación de libros legales, reportes gerenciales y exportación masiva para la SAT.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Generando paquete consolidado de reportes fiscales...")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>📥 Exportar Consolidado SAT</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Reportes */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Libros Legales Listos</p>
+          <h3 className="text-xl font-black text-emerald-400 mt-1">IVA Ventas y Compras</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📘</div>
+      </div>
+      
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Formato de Exportación</p>
+          <h3 className="text-xl font-black text-amber-400 mt-1">Excel (.xlsx) / PDF</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📊</div>
+      </div>
+
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Última Auditoría de Cifras</p>
+          <h3 className="text-xl font-black text-blue-400 mt-1">Sin Descuadres</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🛡️</div>
+      </div>
+    </div>
+
+    {/* Sección de Selección y Generación de Reportes */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Panel de Configuración del Reporte */}
+      <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+          <span>⚙️</span> Parámetros de Emisión
+        </h3>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Reporte</label>
+          <select className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition">
+            <option className="bg-slate-900">Libro de Compras y Servicios (IVA)</option>
+            <option className="bg-slate-900">Libro de Ventas y Servicios (IVA)</option>
+            <option className="bg-slate-900">Estado de Resultados (P y G)</option>
+            <option className="bg-slate-900">Balanza de Comprobación</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Período Fiscal</label>
+          <select className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition">
+            <option className="bg-slate-900">Septiembre 2026</option>
+            <option className="bg-slate-900">Agosto 2026</option>
+            <option className="bg-slate-900">Ejercicio Fiscal 2025</option>
+          </select>
+        </div>
+        <div className="pt-2 space-y-2">
+          <button onClick={() => alert("Generando vista previa del reporte seleccionado...")} className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition border border-slate-700/50 cursor-pointer">
+            Vista Previa en Pantalla
+          </button>
+          <button onClick={() => alert("Reporte exportado exitosamente en formato Excel (.xlsx)")} className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer">
+            Descargar Reporte Excel / PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Historial / Vista Previa de Reportes Generados */}
+      <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>📋</span> Registro de Reportes Emitidos Recientemente
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <th className="py-3.5 px-5">Nombre del Reporte</th>
+                  <th className="py-3.5 px-4 text-center">Periodo</th>
+                  <th className="py-3.5 px-4 text-center">Formato</th>
+                  <th className="py-3.5 px-5 text-center">Estado</th>
+                  <th className="py-3.5 px-5 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">Libro de Ventas y Servicios IVA</td>
+                  <td className="py-4 px-4 text-center text-slate-300">Septiembre 2026</td>
+                  <td className="py-4 px-4 text-center text-amber-400 font-mono font-bold">XLSX</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Generado</span>
+                  </td>
+                  <td className="py-4 px-5 text-center">
+                    <button onClick={() => alert("Descargando archivo XLSX...")} className="text-xs text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer">Descargar</button>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">Estado de Resultados (P y G)</td>
+                  <td className="py-4 px-4 text-center text-slate-300">Septiembre 2026</td>
+                  <td className="py-4 px-4 text-center text-blue-400 font-mono font-bold">PDF</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Generado</span>
+                  </td>
+                  <td className="py-4 px-5 text-center">
+                    <button onClick={() => alert("Descargando archivo PDF...")} className="text-xs text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer">Descargar</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/20 text-right">
+          <span className="text-xs text-slate-400">Todos los reportes cumplen con los requerimientos normativos de la SAT Guatemala.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'nomina' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            👥
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Nómina y Planilla (Guatemala)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de salarios, retenciones laborales obligatorias (IGSS) y bonificaciones de ley.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Procesando cálculo de planilla mensual y retenciones IGSS...")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>⚡ Calcular Planilla Mensual</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Nómina */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Colaboradores</p>
+          <h3 className="text-xl font-black text-white mt-1">24 Empleados Activos</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">👤</div>
+      </div>
+      
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Masa Salarial Mensual</p>
+          <h3 className="text-xl font-black text-amber-400 mt-1">Q. 145,200.00</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">💰</div>
+      </div>
+
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Retención IGSS Laboral (4.83%)</p>
+          <h3 className="text-xl font-black text-emerald-400 mt-1">Q. 7,013.16</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">🛡️</div>
+      </div>
+    </div>
+
+    {/* Sección de Gestión de Nómina */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Panel de Registro / Alta de Empleado */}
+      <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+          <span>➕</span> Registrar Nuevo Empleado
+        </h3>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nombre Completo</label>
+          <input type="text" placeholder="Ej. Juan Carlos Pérez" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Puesto / Cargo</label>
+          <input type="text" placeholder="Ej. Contador General" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Salario Base (Q.)</label>
+            <input type="number" placeholder="0.00" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition font-mono" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Bonificación Ley</label>
+            <input type="number" defaultValue="250.00" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-amber-400 font-mono focus:outline-none focus:border-amber-500/50 transition" />
+          </div>
+        </div>
+        <button onClick={() => alert("Colaborador registrado exitosamente en la base de datos de planilla")} className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer mt-2">
+          Guardar Empleado
+        </button>
+      </div>
+
+      {/* Tabla de Colaboradores Activos */}
+      <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>📋</span> Nómina Activa del Período
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <th className="py-3.5 px-5">Colaborador</th>
+                  <th className="py-3.5 px-4 text-center">Puesto</th>
+                  <th className="py-3.5 px-4 text-right">Salario Base (Q)</th>
+                  <th className="py-3.5 px-4 text-right">IGSS (4.83%)</th>
+                  <th className="py-3.5 px-5 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">Carlos Enrique Morales</td>
+                  <td className="py-4 px-4 text-center text-slate-400">Jefe de Operaciones</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 8,500.00</td>
+                  <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 410.55</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Activo</span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">María Fernanda Juárez</td>
+                  <td className="py-4 px-4 text-center text-slate-400">Asistente Contable</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 5,200.00</td>
+                  <td className="py-4 px-4 text-right font-mono text-rose-400">Q. 251.16</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Activo</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
+          <span className="text-xs text-slate-400">Cálculos sujetos al Código de Trabajo de Guatemala y leyes de previsión social.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'cajachica' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
+            👝
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Caja Chica y Gastos Menores</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de fondos rotativos, vales de efectivo y reposiciones por centro de costo.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Solicitando reposición de fondo de caja chica...")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-400 hover:to-indigo-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-indigo-500/20 transition cursor-pointer"
+        >
+          <span>🔄 Solicitar Reposición</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Caja Chica */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fondo Asignado (Total)</p>
+          <h3 className="text-xl font-black text-white mt-1">Q. 5,000.00</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🏦</div>
+      </div>
+      
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gastos Acumulados</p>
+          <h3 className="text-xl font-black text-rose-400 mt-1">Q. 3,420.00</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">💸</div>
+      </div>
+
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
+          <h3 className="text-xl font-black text-emerald-400 mt-1">Q. 1,580.00</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
+      </div>
+    </div>
+
+    {/* Sección de Gestión de Caja Chica */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Panel de Registro de Gasto */}
+      <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+          <span>📝</span> Registrar Nuevo Vale / Gasto
+        </h3>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Concepto / Descripción</label>
+          <input type="text" placeholder="Ej. Compra de suministros de limpieza" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Categoría</label>
+          <select className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition">
+            <option>Suministros de Oficina</option>
+            <option>Mensajería y Transporte</option>
+            <option>Gastos de Mantenimiento</option>
+            <option>Alimentación / Varios</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Monto (Q.)</label>
+          <input type="number" placeholder="0.00" className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition font-mono" />
+        </div>
+        <button onClick={() => alert("Vale de caja chica registrado con éxito")} className="w-full bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-400 hover:to-indigo-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 cursor-pointer mt-2">
+          Registrar Vale
+        </button>
+      </div>
+
+      {/* Tabla de Vales y Movimientos Recientes */}
+      <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>🧾</span> Historial de Vales del Período
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <th className="py-3.5 px-5">Concepto</th>
+                  <th className="py-3.5 px-4 text-center">Categoría</th>
+                  <th className="py-3.5 px-4 text-right">Monto (Q)</th>
+                  <th className="py-3.5 px-5 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">Recarga de combustible vehículo ventas</td>
+                  <td className="py-4 px-4 text-center text-slate-400">Mensajería y Transporte</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. 350.00</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Justificado</span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-bold text-white">Compra de café y agua purificada</td>
+                  <td className="py-4 px-4 text-center text-slate-400">Suministros de Oficina</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. 175.00</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Justificado</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
+          <span className="text-xs text-slate-400">Los comprobantes fiscales de caja chica deben respaldar cada salida de efectivo.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'control_contador' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🛡️
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Control Global (Contador)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Auditoría en tiempo real de pólizas contables, detección de anomalías y supervisión fiscal.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => alert("Ejecutando auditoría global de integridad contable...")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>🔍 Ejecutar Auditoría Global</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Auditoría */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pólizas del Mes</p>
+          <h3 className="text-xl font-black text-white mt-1">342 Registradas</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📑</div>
+      </div>
+      
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Asientos Descuadrados</p>
+          <h3 className="text-xl font-black text-emerald-400 mt-1">0 Asientos</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">✅</div>
+      </div>
+
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado de Integridad</p>
+          <h3 className="text-xl font-black text-amber-400 mt-1">100% Consistente</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🔒</div>
+      </div>
+    </div>
+
+    {/* Sección Interactiva de Auditoría */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Panel de Validación Rápida */}
+      <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+          <span>⚙️</span> Herramientas de Cierre
+        </h3>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Acción de Supervisión</label>
+          <select className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition">
+            <option>Verificar Partidas Dobles</option>
+            <option>Validar Cruce de Saldos Bancarios</option>
+            <option>Comprobar Correlativo de DTEs</option>
+            <option>Congelar Período Contable</option>
+          </select>
+        </div>
+        <button onClick={() => alert("Validación ejecutada con éxito. Sin inconsistencias detectadas.")} className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer mt-2">
+          Aplicar Validación
+        </button>
+      </div>
+
+      {/* Tabla de Auditoría de Pólizas Recientes */}
+      <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>📋</span> Bitácora de Pólizas y Partidas Recientes
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <th className="py-3.5 px-5">No. Póliza</th>
+                  <th className="py-3.5 px-4 text-center">Tipo</th>
+                  <th className="py-3.5 px-4 text-right">Monto Total (Q)</th>
+                  <th className="py-3.5 px-5 text-center">Auditoría</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-mono text-amber-400 font-bold">POL-DIARIO-089</td>
+                  <td className="py-4 px-4 text-center text-slate-300">Diario General</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 24,500.00</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Verificado</span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 font-mono text-amber-400 font-bold">POL-ING-142</td>
+                  <td className="py-4 px-4 text-center text-slate-300">Ingreso Bancario</td>
+                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. 12,800.00</td>
+                  <td className="py-4 px-5 text-center">
+                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">Verificado</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
+          <span className="text-xs text-slate-400">Supervisión contable bajo normas financieras vigentes.</span>
+        </div>
       </div>
     </div>
   </div>
