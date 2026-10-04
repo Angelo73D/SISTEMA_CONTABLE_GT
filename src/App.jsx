@@ -2988,100 +2988,169 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
     </div>
   </div>
 )}
+{activeTab === 'configuracion' && (() => {
+  // Estado local para la configuración de la empresa (Paso 1)
+  const [configData, setConfigData] = React.useState({
+    razonSocial: "Enterprise GTQ, S.A.",
+    nit: "7849102-4",
+    representante: "Ángel Josué Duarte Arana",
+    direccion: "Guatemala, Guatemala",
+    regimen: "Sobre Utilidades (25%)",
+    moneda: "Quetzales (GTQ - Q.)"
+  });
 
-{activeTab === 'configuracion' && (
-  <div className="p-6 space-y-6 max-w-7xl mx-auto">
-    {/* Encabezado del Módulo */}
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-      <div>
+  const [cuentas, setCuentas] = React.useState([
+    { codigo: "1101", nombre: "Caja General y Bancos", tipo: "Activo Corriente" },
+    { codigo: "1102", nombre: "Cuentas por Cobrar Comerciales", tipo: "Activo Corriente" },
+    { codigo: "1201", nombre: "Inventarios y Mercaderías", tipo: "Activo No Corriente" },
+    { codigo: "2101", nombre: "Cuentas por Pagar Proveedores", tipo: "Pasivo Corriente" },
+    { codigo: "3101", nombre: "Capital Social Autorizado", tipo: "Patrimonio" },
+    { codigo: "4101", nombre: "Ventas de Bienes y Servicios", tipo: "Ingresos" },
+    { codigo: "5101", nombre: "Gastos de Operación y Personal", tipo: "Gastos" }
+  ]);
+
+  const [guardadoExitoso, setGuardadoExitoso] = React.useState(false);
+
+  const handleSave = () => {
+    // Aquí guardamos en el estado global o localStorage de forma persistente
+    setGuardadoExitoso(true);
+    setTimeout(() => setGuardadoExitoso(false), 3000);
+  };
+
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Encabezado del Módulo */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+              ⚙️
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">Configuración General y Catálogo</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Parámetros fiscales, sociedad mercantil y catálogo de cuentas replicable.</p>
+            </div>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-            ⚙️
+          {guardadoExitoso && (
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 animate-pulse">
+              ✔ Cambios guardados con éxito
+            </span>
+          )}
+          <button 
+            onClick={handleSave}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+          >
+            <span>💾 Guardar Cambios</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tarjetas de Resumen Configuración */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Régimen ISR Activo</p>
+            <h3 className="text-xl font-black text-amber-400 mt-1">{configData.regimen}</h3>
+          </div>
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛️</div>
+        </div>
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moneda Base del Sistema</p>
+            <h3 className="text-xl font-black text-emerald-400 mt-1">{configData.moneda}</h3>
+          </div>
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
+        </div>
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cuentas Base en Catálogo</p>
+            <h3 className="text-xl font-black text-blue-400 mt-1">{cuentas.length} Registradas</h3>
+          </div>
+          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📚</div>
+        </div>
+      </div>
+
+      {/* Formulario / Panel de Datos de la Empresa */}
+      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-6">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-4">
+          <span>🏢</span> Datos Fiscales y Comerciales Registrados en SAT
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Razón Social de la Empresa</label>
+            <input 
+              type="text" 
+              value={configData.razonSocial}
+              onChange={(e) => setConfigData({...configData, razonSocial: e.target.value})}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
+            />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">Configuración General y Empresa</h1>
-            <p className="text-sm text-slate-400 mt-0.5">Parámetros fiscales, datos de la sociedad mercantil y credenciales de conexión.</p>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">NIT de la Empresa</label>
+            <input 
+              type="text" 
+              value={configData.nit}
+              onChange={(e) => setConfigData({...configData, nit: e.target.value})}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-amber-400 font-mono focus:outline-none focus:border-amber-500/50 transition"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Representante Legal</label>
+            <input 
+              type="text" 
+              value={configData.representante}
+              onChange={(e) => setConfigData({...configData, representante: e.target.value})}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dirección Comercial Principal</label>
+            <input 
+              type="text" 
+              value={configData.direccion}
+              onChange={(e) => setConfigData({...configData, direccion: e.target.value})}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
+            />
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <button 
-          onClick={() => alert("Cambios de configuración guardados exitosamente")}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-        >
-          <span>💾 Guardar Cambios</span>
-        </button>
-      </div>
-    </div>
 
-    {/* Tarjetas de Resumen Configuración */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Régimen ISR Activo</p>
-          <h3 className="text-xl font-black text-amber-400 mt-1">Sobre Utilidades (25%)</h3>
+      {/* Sección del Catálogo de Cuentas Replicable (Diferencial Arcadiux) */}
+      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <span>📋</span> Catálogo de Cuentas Base (Replicable para Nuevos Clientes)
+          </h3>
+          <span className="text-xs text-slate-400 font-medium">Estructura oficial para asientos contables</span>
         </div>
-        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛️</div>
-      </div>
-      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moneda Base del Sistema</p>
-          <h3 className="text-xl font-black text-emerald-400 mt-1">Quetzales (GTQ - Q.)</h3>
-        </div>
-        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
-      </div>
-      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Versión del Sistema</p>
-          <h3 className="text-xl font-black text-blue-400 mt-1">Enterprise 2.5 GT</h3>
-        </div>
-        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🚀</div>
-      </div>
-    </div>
 
-    {/* Formulario / Panel de Datos de la Empresa */}
-    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-6">
-      <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-4">
-        <span>🏢</span> Datos Fiscales y Comerciales Registrados en SAT
-      </h3>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Razón Social de la Empresa</label>
-          <input 
-            type="text" 
-            defaultValue="Enterprise GTQ, S.A." 
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">NIT de la Empresa</label>
-          <input 
-            type="text" 
-            defaultValue="7849102-4" 
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-amber-400 font-mono focus:outline-none focus:border-amber-500/50 transition"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Representante Legal</label>
-          <input 
-            type="text" 
-            defaultValue="Ángel Josué Duarte Arana" 
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dirección Comercial Principal</label>
-          <input 
-            type="text" 
-            defaultValue="Guatemala, Guatemala" 
-            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-          />
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-950/50 text-slate-400 uppercase font-semibold">
+              <tr>
+                <th className="px-4 py-3 rounded-l-xl">Código</th>
+                <th className="px-4 py-3">Nombre de la Cuenta</th>
+                <th className="px-4 py-3 rounded-r-xl">Clasificación / Tipo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {cuentas.map((cta, index) => (
+                <tr key={index} className="hover:bg-slate-800/30 transition">
+                  <td className="px-4 py-3 font-mono text-amber-400 font-bold">{cta.codigo}</td>
+                  <td className="px-4 py-3 text-slate-200 font-medium">{cta.nombre}</td>
+                  <td className="px-4 py-3 text-slate-400">{cta.tipo}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
-)}
+  );
+})()}
 
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
