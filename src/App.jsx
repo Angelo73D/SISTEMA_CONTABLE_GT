@@ -633,6 +633,9 @@ const facturasFiltradasPeriodo = facturasXML.filter(f => {
             { id: 'control_contador', label: 'Control Global (Contador)', icon: Activity },
             { id: 'inventarios', label: 'Inventarios (Kardex)', icon: Package },
             { id: 'cuentas_corrientes', label: 'Cuentas Corrientes (CXP)', icon: FileSpreadsheet },
+            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Landmark },
+            { id: 'cierres', label: 'Cierres Contables y Fiscales', icon: Lock },
+            { id: 'configuracion', label: 'Configuración General', icon: Settings },
           ].map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
