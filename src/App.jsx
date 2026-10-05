@@ -925,7 +925,145 @@ function App() {
             </div>
           )}
 
-{/* EMISIÓN DTE */}
+            {/* DASHBOARD / RESUMEN GENERAL DE LA EMPRESA */}
+            {activeTab === 'dashboard' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Encabezado del Dashboard */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0b1329] border border-slate-800 p-6 rounded-2xl shadow-xl">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                      Empresa Activa
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">NIT: {clienteSeleccionado?.nit || 'N/A'}</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white">{clienteSeleccionado?.razon_social || 'Seleccione una Empresa'}</h2>
+                  <p className="text-xs text-slate-400">Panel de control gerencial, métricas fiscales y accesos directos del período actual.</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button 
+                    onClick={() => setActiveTab('estados')}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg cursor-pointer active:scale-95 transition-all"
+                  >
+                    Ver Estados Financieros
+                  </button>
+                </div>
+              </div>
+
+              {!clienteSeleccionado ? (
+                <div className="bg-[#0b1329] border border-slate-800 p-16 rounded-3xl text-center space-y-4">
+                  <Building2 className="w-16 h-16 text-amber-400 mx-auto opacity-40 animate-pulse" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">Ninguna empresa seleccionada</h3>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">Para comenzar a operar, registrar documentos o ver métricas, por favor selecciona una empresa desde el módulo de Control Global de la Firma.</p>
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('control_contador')}
+                    className="mt-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-400/30 font-bold px-5 py-2.5 rounded-xl text-xs cursor-pointer"
+                  >
+                    Ir a Cartera de Empresas
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Tarjetas de Métricas Rápidas (KPIs) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Ventas DTE */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span>Ventas DTE (Mes)</span>
+                        <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-[10px]">Facturado</span>
+                      </div>
+                      <p className="text-2xl font-black font-mono text-white">Q {Number(totalFactura || 0).toFixed(2)}</p>
+                      <p className="text-[11px] text-slate-400">Certificadas ante la SAT</p>
+                    </div>
+
+                    {/* Compras SAT */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span>Compras SAT</span>
+                        <span className="text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded text-[10px]">Crédito Fiscal</span>
+                      </div>
+                      <p className="text-2xl font-black font-mono text-white">Q {Number(totalFacturasSAT || 0).toFixed(2)}</p>
+                      <p className="text-[11px] text-slate-400">Gastos e Insumos</p>
+                    </div>
+
+                    {/* Planilla Activa */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span>Planilla (Líquida)</span>
+                        <span className="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-[10px]">IGSS 4.83%</span>
+                      </div>
+                      <p className="text-2xl font-black font-mono text-white">Q {Number(resumenPlanilla?.totalLiquido || 0).toFixed(2)}</p>
+                      <p className="text-[11px] text-slate-400">{empleados?.length || 0} Colaboradores</p>
+                    </div>
+
+                    {/* Caja Chica */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span>Caja Chica Gastos</span>
+                        <span className="text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded text-[10px]">Operativo</span>
+                      </div>
+                      <p className="text-2xl font-black font-mono text-white">Q {Number(totalCajaChica || 0).toFixed(2)}</p>
+                      <p className="text-[11px] text-slate-400">Vales y comprobantes menores</p>
+                    </div>
+                  </div>
+
+                  {/* Sección de Accesos Directos y Resumen Operativo */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Accesos Rápidos */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4 lg:col-span-1">
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-3">Accesos Directos</h3>
+                      <div className="space-y-2">
+                        <button 
+                          onClick={() => setActiveTab('cajachica')}
+                          className="w-full text-left bg-slate-900/60 hover:bg-slate-800/80 p-3 rounded-xl border border-slate-800/80 text-xs text-slate-200 font-medium flex items-center justify-between transition-all cursor-pointer"
+                        >
+                          <span>📝 Registrar Gasto de Caja Chica</span>
+                          <span className="text-amber-400 font-mono">→</span>
+                        </button>
+                        <button 
+                          onClick={() => setActiveTab('nomina')}
+                          className="w-full text-left bg-slate-900/60 hover:bg-slate-800/80 p-3 rounded-xl border border-slate-800/80 text-xs text-slate-200 font-medium flex items-center justify-between transition-all cursor-pointer"
+                        >
+                          <span>👥 Consultar Nómina / Colaboradores</span>
+                          <span className="text-amber-400 font-mono">→</span>
+                        </button>
+                        <button 
+                          onClick={() => setActiveTab('estados')}
+                          className="w-full text-left bg-slate-900/60 hover:bg-slate-800/80 p-3 rounded-xl border border-slate-800/80 text-xs text-slate-200 font-medium flex items-center justify-between transition-all cursor-pointer"
+                        >
+                          <span>📊 Generar Balance General y P&G</span>
+                          <span className="text-amber-400 font-mono">→</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Estado Rápido de Utilidad Neta */}
+                    <div className="bg-[#0b1329] border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4 lg:col-span-2 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-3">Estimación Preliminar de Resultados</h3>
+                        <p className="text-xs text-slate-400 mt-2">Diferencia preliminar entre ingresos reportados por DTE y los gastos operativos del período (Planilla, Compras SAT y Caja Chica).</p>
+                      </div>
+                      <div className="bg-slate-950 p-5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-slate-400 font-bold uppercase">Utilidad Neta Estimada</p>
+                          <p className="text-lg font-mono font-bold text-emerald-400 mt-0.5">
+                            Q {(Number(totalFactura || 0) - Number(totalFacturasSAT || 0) - Number(totalCajaChica || 0) - Number(resumenPlanilla?.totalLiquido || 0)).toFixed(2)}
+                          </p>
+                        </div>
+                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/20">
+                          Operando
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* EMISIÓN DTE */}
           {activeTab === 'facturacion' && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -3764,169 +3902,151 @@ function App() {
   );
 })()}
 
-{activeTab === 'configuracion' && (() => {
-  // Estado local para la configuración de la empresa (Paso 1)
-  const [configData, setConfigData] = React.useState({
-    razonSocial: "Enterprise GTQ, S.A.",
-    nit: "7849102-4",
-    representante: "Ángel Josué Duarte Arana",
-    direccion: "Guatemala, Guatemala",
-    regimen: "Sobre Utilidades (25%)",
-    moneda: "Quetzales (GTQ - Q.)"
-  });
-
-  const [cuentas, setCuentas] = React.useState([
-    { codigo: "1101", nombre: "Caja General y Bancos", tipo: "Activo Corriente" },
-    { codigo: "1102", nombre: "Cuentas por Cobrar Comerciales", tipo: "Activo Corriente" },
-    { codigo: "1201", nombre: "Inventarios y Mercaderías", tipo: "Activo No Corriente" },
-    { codigo: "2101", nombre: "Cuentas por Pagar Proveedores", tipo: "Pasivo Corriente" },
-    { codigo: "3101", nombre: "Capital Social Autorizado", tipo: "Patrimonio" },
-    { codigo: "4101", nombre: "Ventas de Bienes y Servicios", tipo: "Ingresos" },
-    { codigo: "5101", nombre: "Gastos de Operación y Personal", tipo: "Gastos" }
-  ]);
-
-  const [guardadoExitoso, setGuardadoExitoso] = React.useState(false);
-
-  const handleSave = () => {
-    // Aquí guardamos en el estado global o localStorage de forma persistente
-    setGuardadoExitoso(true);
-    setTimeout(() => setGuardadoExitoso(false), 3000);
-  };
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              ⚙️
+{activeTab === 'configuracion' && (
+          <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-300">
+            {/* Encabezado del Módulo */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+                    ⚙️
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-extrabold text-white tracking-tight">Configuración General y Catálogo</h1>
+                    <p className="text-sm text-slate-400 mt-0.5">Parámetros fiscales, sociedad mercantil y catálogo de cuentas replicable.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => alert("Cambios guardados con éxito")}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+                >
+                  <span>💾 Guardar Cambios</span>
+                </button>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Configuración General y Catálogo</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Parámetros fiscales, sociedad mercantil y catálogo de cuentas replicable.</p>
+
+            {/* Tarjetas de Resumen Configuración */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Régimen ISR Activo</p>
+                  <h3 className="text-xl font-black text-amber-400 mt-1">Sobre Utilidades (25%)</h3>
+                </div>
+                <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛️</div>
+              </div>
+              <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moneda Base del Sistema</p>
+                  <h3 className="text-xl font-black text-emerald-400 mt-1">Quetzales (GTQ - Q.)</h3>
+                </div>
+                <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
+              </div>
+              <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cuentas Base en Catálogo</p>
+                  <h3 className="text-xl font-black text-blue-400 mt-1">7 Registradas</h3>
+                </div>
+                <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📚</div>
+              </div>
+            </div>
+
+            {/* Formulario / Panel de Datos de la Empresa */}
+            <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-6">
+              <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-4">
+                <span>🏢</span> Datos Fiscales y Comerciales Registrados en SAT
+              </h3>
+
+              {!clienteSeleccionado ? (
+                <div className="bg-[#0b1329] border border-slate-800 p-8 rounded-2xl text-center space-y-3">
+                  <Building2 className="w-10 h-10 text-amber-400 mx-auto opacity-50" />
+                  <h3 className="text-sm font-bold text-white">Seleccione un cliente en el panel global para editar sus datos fiscales</h3>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Razón Social de la Empresa</label>
+                    <input 
+                      type="text" 
+                      value={clienteSeleccionado.razon_social || ""} 
+                      readOnly
+                      className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">NIT de la Empresa</label>
+                    <input 
+                      type="text" 
+                      value={clienteSeleccionado.nit || ""} 
+                      readOnly
+                      className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-amber-400 font-mono focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sección del Catálogo de Cuentas Replicable */}
+            <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>📋</span> Catálogo de Cuentas Base (Replicable para Nuevos Clientes)
+                </h3>
+                <span className="text-xs text-slate-400 font-medium">Estructura oficial para asientos contables</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950/50 text-slate-400 uppercase font-semibold">
+                    <tr>
+                      <th className="px-4 py-3 rounded-l-xl">Código</th>
+                      <th className="px-4 py-3">Nombre de la Cuenta</th>
+                      <th className="px-4 py-3 rounded-r-xl">Clasificación / Tipo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">1101</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Caja General y Bancos</td>
+                      <td className="px-4 py-3 text-slate-400">Activo Corriente</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">1102</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Cuentas por Cobrar Comerciales</td>
+                      <td className="px-4 py-3 text-slate-400">Activo Corriente</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">1201</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Inventarios y Mercaderías</td>
+                      <td className="px-4 py-3 text-slate-400">Activo No Corriente</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">2101</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Cuentas por Pagar Proveedores</td>
+                      <td className="px-4 py-3 text-slate-400">Pasivo Corriente</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">3101</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Capital Social Autorizado</td>
+                      <td className="px-4 py-3 text-slate-400">Patrimonio</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">4101</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Ventas de Bienes y Servicios</td>
+                      <td className="px-4 py-3 text-slate-400">Ingresos</td>
+                    </tr>
+                    <tr className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-mono text-amber-400 font-bold">5101</td>
+                      <td className="px-4 py-3 text-slate-200 font-medium">Gastos de Operación y Personal</td>
+                      <td className="px-4 py-3 text-slate-400">Gastos</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {guardadoExitoso && (
-            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 animate-pulse">
-              ✔ Cambios guardados con éxito
-            </span>
-          )}
-          <button 
-            onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>💾 Guardar Cambios</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Tarjetas de Resumen Configuración */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Régimen ISR Activo</p>
-            <h3 className="text-xl font-black text-amber-400 mt-1">{configData.regimen}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛️</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moneda Base del Sistema</p>
-            <h3 className="text-xl font-black text-emerald-400 mt-1">{configData.moneda}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cuentas Base en Catálogo</p>
-            <h3 className="text-xl font-black text-blue-400 mt-1">{cuentas.length} Registradas</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📚</div>
-        </div>
-      </div>
-
-      {/* Formulario / Panel de Datos de la Empresa */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-6">
-        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-4">
-          <span>🏢</span> Datos Fiscales y Comerciales Registrados en SAT
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Razón Social de la Empresa</label>
-            <input 
-              type="text" 
-              value={configData.razonSocial}
-              onChange={(e) => setConfigData({...configData, razonSocial: e.target.value})}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">NIT de la Empresa</label>
-            <input 
-              type="text" 
-              value={configData.nit}
-              onChange={(e) => setConfigData({...configData, nit: e.target.value})}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-amber-400 font-mono focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Representante Legal</label>
-            <input 
-              type="text" 
-              value={configData.representante}
-              onChange={(e) => setConfigData({...configData, representante: e.target.value})}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dirección Comercial Principal</label>
-            <input 
-              type="text" 
-              value={configData.direccion}
-              onChange={(e) => setConfigData({...configData, direccion: e.target.value})}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition font-medium"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Sección del Catálogo de Cuentas Replicable (Diferencial Arcadiux) */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl p-6 backdrop-blur-md space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Catálogo de Cuentas Base (Replicable para Nuevos Clientes)
-          </h3>
-          <span className="text-xs text-slate-400 font-medium">Estructura oficial para asientos contables</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/50 text-slate-400 uppercase font-semibold">
-              <tr>
-                <th className="px-4 py-3 rounded-l-xl">Código</th>
-                <th className="px-4 py-3">Nombre de la Cuenta</th>
-                <th className="px-4 py-3 rounded-r-xl">Clasificación / Tipo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {cuentas.map((cta, index) => (
-                <tr key={index} className="hover:bg-slate-800/30 transition">
-                  <td className="px-4 py-3 font-mono text-amber-400 font-bold">{cta.codigo}</td>
-                  <td className="px-4 py-3 text-slate-200 font-medium">{cta.nombre}</td>
-                  <td className="px-4 py-3 text-slate-400">{cta.tipo}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-})()}
+        )}
 
           {/* INGESTIÓN SAT XML */}
           {activeTab === 'sat' && (
@@ -3989,109 +4109,108 @@ function App() {
               )}
             </div>
           )}
+{/* LIBROS LEGALES IVA */}
+        {activeTab === 'libros_iva' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-black text-white">Libros Legales y Liquidación de IVA</h2>
+              {clienteSeleccionado && (
+                <button
+                  onClick={handleExportarDeclaraguateTXT}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95"
+                >
+                  Exportar TXT Declaraguate
+                </button>
+              )}
+            </div>
 
-          {/* LIBROS LEGALES IVA */}
-          {activeTab === 'libros_iva' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-black text-white">Libros Legales y Liquidación de IVA</h2>
-                {clienteSeleccionado && (
-                  <button
-                    onClick={handleExportarDeclaraguateTXT}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95"
-                  >
-                    Exportar TXT Declaraguate
-                  </button>
-                )}
+            {!clienteSeleccionado ? (
+              <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
+                <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
+                <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus libros legales</h3>
               </div>
+            ) : (
+              <div className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Débito Fiscal</p><p className="text-xl font-bold text-amber-400 mt-1">Q {totalDebitoFiscal.toFixed(2)}</p></div>
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Crédito Fiscal</p><p className="text-xl font-bold text-emerald-400 mt-1">Q {totalCreditoFiscal.toFixed(2)}</p></div>
+                <div className={`p-4 rounded-xl border ${saldoIvaLiquidacion >= 0 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'}`}>
+                  <p className="text-xs font-sans font-bold">Resultado Mensual</p>
+                  <p className="text-xl font-bold mt-1">Q {Math.abs(saldoIvaLiquidacion).toFixed(2)}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-              {!clienteSeleccionado ? (
-                <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
-                  <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
-                  <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus libros legales</h3>
+        {/* RETENCIONES */}
+        {activeTab === 'retenciones' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <h2 className="text-2xl font-black text-white">Control de Retenciones IVA e ISR</h2>
+            {!clienteSeleccionado ? (
+              <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
+                <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
+                <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus retenciones</h3>
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleAgregarRetencion} className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <select 
+                    value={nuevaRetencion.tipo} 
+                    onChange={(e) => { setNuevaRetencion({...nuevaRetencion, tipo: e.target.value}); setDirtyState(true); }} 
+                    className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                  >
+                    <option value="IVA 15%">IVA 15%</option>
+                    <option value="ISR 5%">ISR 5%</option>
+                  </select>
+                  <input 
+                    type="text" 
+                    placeholder="Documento" 
+                    value={nuevaRetencion.documento} 
+                    onChange={(e) => { setNuevaRetencion({...nuevaRetencion, documento: e.target.value}); setDirtyState(true); }} 
+                    className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
+                    required 
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="NIT Agente" 
+                    value={nuevaRetencion.nitAgente} 
+                    onChange={(e) => { setNuevaRetencion({...nuevaRetencion, nitAgente: e.target.value}); setDirtyState(true); }} 
+                    className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
+                  />
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="Base Q" 
+                    value={nuevaRetencion.montoBase} 
+                    onChange={(e) => { setNuevaRetencion({...nuevaRetencion, montoBase: e.target.value}); setDirtyState(true); }} 
+                    className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" 
+                    required 
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={isSaving}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    Registrar
+                  </button>
+                </form>
+                <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
+                      <tr><th className="p-3">Tipo</th><th className="p-3">Documento</th><th className="p-3 text-right">Base</th><th className="p-3 text-right">Retenido</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {retenciones.map(r => (
+                        <tr key={r.id}><td className="p-3 font-sans font-bold text-white">{r.tipo}</td><td className="p-3 text-slate-400">{r.documento}</td><td className="p-3 text-right text-slate-300">Q {r.montoBase.toFixed(2)}</td><td className="p-3 text-right font-black text-amber-400">Q {r.montoRetenido.toFixed(2)}</td></tr>
+                      ))}
+                      {retenciones.length === 0 && <tr><td colSpan="4" className="p-6 text-center text-slate-500 font-sans">No hay retenciones registradas para este cliente.</td></tr>}
+                    </tbody>
+                  </table>
                 </div>
-              ) : (
-                <div className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
-                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Débito Fiscal</p><p className="text-xl font-bold text-amber-400 mt-1">Q {totalDebitoFiscal.toFixed(2)}</p></div>
-                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Crédito Fiscal</p><p className="text-xl font-bold text-emerald-400 mt-1">Q {totalCreditoFiscal.toFixed(2)}</p></div>
-                  <div className={`p-4 rounded-xl border ${saldoIvaLiquidacion >= 0 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'}`}>
-                    <p className="text-xs font-sans font-bold">Resultado Mensual</p>
-                    <p className="text-xl font-bold mt-1">Q {Math.abs(saldoIvaLiquidacion).toFixed(2)}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* RETENCIONES */}
-          {activeTab === 'retenciones' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <h2 className="text-2xl font-black text-white">Control de Retenciones IVA e ISR</h2>
-              {!clienteSeleccionado ? (
-                <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
-                  <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
-                  <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus retenciones</h3>
-                </div>
-              ) : (
-                <>
-                  <form onSubmit={handleAgregarRetencion} className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <select 
-                      value={nuevaRetencion.tipo} 
-                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, tipo: e.target.value}); setDirtyState(true); }} 
-                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
-                    >
-                      <option value="IVA 15%">IVA 15%</option>
-                      <option value="ISR 5%">ISR 5%</option>
-                    </select>
-                    <input 
-                      type="text" 
-                      placeholder="Documento" 
-                      value={nuevaRetencion.documento} 
-                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, documento: e.target.value}); setDirtyState(true); }} 
-                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
-                      required 
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="NIT Agente" 
-                      value={nuevaRetencion.nitAgente} 
-                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, nitAgente: e.target.value}); setDirtyState(true); }} 
-                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white" 
-                    />
-                    <input 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="Base Q" 
-                      value={nuevaRetencion.montoBase} 
-                      onChange={(e) => { setNuevaRetencion({...nuevaRetencion, montoBase: e.target.value}); setDirtyState(true); }} 
-                      className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono" 
-                      required 
-                    />
-                    <button 
-                      type="submit" 
-                      disabled={isSaving}
-                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs cursor-pointer active:scale-95 disabled:opacity-50"
-                    >
-                      Registrar
-                    </button>
-                  </form>
-                  <div className="bg-[#0b1329] rounded-2xl border border-slate-800 overflow-hidden">
-                    <table className="w-full text-left text-xs font-mono">
-                      <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-sans">
-                        <tr><th className="p-3">Tipo</th><th className="p-3">Documento</th><th className="p-3 text-right">Base</th><th className="p-3 text-right">Retenido</th></tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800">
-                        {retenciones.map(r => (
-                          <tr key={r.id}><td className="p-3 font-sans font-bold text-white">{r.tipo}</td><td className="p-3 text-slate-400">{r.documento}</td><td className="p-3 text-right text-slate-300">Q {r.montoBase.toFixed(2)}</td><td className="p-3 text-right font-black text-amber-400">Q {r.montoRetenido.toFixed(2)}</td></tr>
-                        ))}
-                        {retenciones.length === 0 && <tr><td colSpan="4" className="p-6 text-center text-slate-500 font-sans">No hay retenciones registradas para este cliente.</td></tr>}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+              </>
+            )}
+          </div>
+        )}
 
           {/* CXC CXP */}
           {activeTab === 'cxc_cxp' && (
