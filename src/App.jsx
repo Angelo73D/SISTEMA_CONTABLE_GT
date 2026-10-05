@@ -2314,7 +2314,6 @@ function App() {
     l.estado.toLowerCase().includes(busquedaIva.toLowerCase())
   );
 
-  // Cálculos automáticos basados en el período más reciente (Septiembre 2026 o el filtro activo)
   const totalDebitoVentas = libros
     .filter(l => l.tipo.includes('Ventas') && l.periodo.includes('Septiembre 2026'))
     .reduce((acc, l) => acc + l.iva, 0);
