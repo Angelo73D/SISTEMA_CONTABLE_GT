@@ -4110,37 +4110,43 @@ function App() {
             </div>
           )}
 {/* LIBROS LEGALES IVA */}
-        {activeTab === 'libros_iva' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-black text-white">Libros Legales y Liquidación de IVA</h2>
-              {clienteSeleccionado && (
-                <button
-                  onClick={handleExportarDeclaraguateTXT}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95"
-                >
-                  Exportar TXT Declaraguate
-                </button>
-              )}
-            </div>
+{activeTab === 'libros_iva' && (
+  <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="flex justify-between items-center">
+      <h2 className="text-2xl font-black text-white">Libros Legales y Liquidación de IVA</h2>
+      {clienteSeleccionado && (
+        <button
+          onClick={handleExportarDeclaraguateTXT}
+          className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs cursor-pointer shadow-lg active:scale-95"
+        >
+          Exportar TXT Declaraguate
+        </button>
+      )}
+    </div>
 
-            {!clienteSeleccionado ? (
-              <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
-                <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
-                <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus libros legales</h3>
-              </div>
-            ) : (
-              <div className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
-                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Débito Fiscal</p><p className="text-xl font-bold text-amber-400 mt-1">Q {totalDebitoFiscal.toFixed(2)}</p></div>
-                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800"><p className="text-xs text-slate-400 font-sans">Crédito Fiscal</p><p className="text-xl font-bold text-emerald-400 mt-1">Q {totalCreditoFiscal.toFixed(2)}</p></div>
-                <div className={`p-4 rounded-xl border ${saldoIvaLiquidacion >= 0 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'}`}>
-                  <p className="text-xs font-sans font-bold">Resultado Mensual</p>
-                  <p className="text-xl font-bold mt-1">Q {Math.abs(saldoIvaLiquidacion).toFixed(2)}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+    {!clienteSeleccionado ? (
+      <div className="bg-[#0b1329] border border-slate-800 p-12 rounded-3xl text-center space-y-3">
+        <Building2 className="w-12 h-12 text-amber-400 mx-auto opacity-50" />
+        <h3 className="text-base font-bold text-white">Seleccione un cliente para ver sus libros legales</h3>
+      </div>
+    ) : (
+      <div className="bg-[#0b1329] p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
+        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
+          <p className="text-xs text-slate-400 font-sans">Débito Fiscal</p>
+          <p className="text-xl font-bold text-amber-400 mt-1">Q {Number(typeof totalDebitoFiscal !== 'undefined' ? totalDebitoFiscal : 0).toFixed(2)}</p>
+        </div>
+        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
+          <p className="text-xs text-slate-400 font-sans">Crédito Fiscal</p>
+          <p className="text-xl font-bold text-emerald-400 mt-1">Q {Number(typeof totalCreditoFiscal !== 'undefined' ? totalCreditoFiscal : 0).toFixed(2)}</p>
+        </div>
+        <div className={`p-4 rounded-xl border ${Number(typeof saldoIvaLiquidacion !== 'undefined' ? saldoIvaLiquidacion : 0) >= 0 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'}`}>
+          <p className="text-xs font-sans font-bold">Resultado Mensual</p>
+          <p className="text-xl font-bold mt-1">Q {Math.abs(Number(typeof saldoIvaLiquidacion !== 'undefined' ? saldoIvaLiquidacion : 0)).toFixed(2)}</p>
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
         {/* RETENCIONES */}
         {activeTab === 'retenciones' && (
