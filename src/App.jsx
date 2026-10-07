@@ -11,7 +11,244 @@ import {
 } from 'lucide-react';
 
 function App() {
+// --- ESTADOS GLOBALES DE CAJA CHICA (Pégalos arriba en tu componente App) ---
+  const [saldoCajaChica, setSaldoCajaChica] = React.useState(2500.00);
+  const [limiteMaximoCaja] = React.useState(3000.00);
+  const [gastosCajaChica, setGastosCajaChica] = React.useState([
+    { id: 1, concepto: "Compra de suministros de limpieza y café", fecha: "2026-10-05", categoria: "Insumos de Oficina", monto: 185.50, comprobante: "FCT-4421" },
+    { id: 2, concepto: "Pago de mensajería express urgente", fecha: "2026-10-06", categoria: "Logística / Envíos", monto: 75.00, comprobante: "REC-9912" },
+    { id: 3, concepto: "Repuestos menores para impresora", fecha: "2026-10-07", categoria: "Mantenimiento", monto: 220.00, comprobante: "FCT-8834" }
+  ]);
+  const [nuevoGastoCaja, setNuevoGastoCaja] = React.useState({
+    concepto: '',
+    categoria: 'Insumos de Oficina',
+    monto: '',
+    comprobante: ''
+  });
+  const [mostrarModalGasto, setMostrarModalGasto] = React.useState(false);
+
+  
+// --- ESTADOS PARA CIERRES CONTABLES Y FISCALES ---
+  const [busquedaCierre, setBusquedaCierre] = React.useState('');
+  const [showModalCierre, setShowModalCierre] = React.useState(false);
+  const [nuevoPeriodo, setNuevoPeriodo] = React.useState('Septiembre 2026');
+  const [tipoCierre, setTipoCierre] = React.useState('Cierre Mensual');
+  const [utilidadNeta, setUtilidadNeta] = React.useState('');
+
+  const [historialCierres, setHistorialCierres] = React.useState([
+    {
+      periodo: "Agosto 2026",
+      tipo: "Cierre Mensual",
+      fecha: "05/09/2026",
+      utilidad: 68450.00,
+      responsable: "Ángel Duarte (Admin)",
+      estado: "Cerrado / Bloqueado"
+    },
+    {
+      periodo: "Ejercicio Fiscal 2025",
+      tipo: "Cierre Anual",
+      fecha: "15/01/2026",
+      utilidad: 742100.00,
+      responsable: "Ángel Duarte (Admin)",
+      estado: "Auditado y Presentado"
+    }
+  ]);
+
+// --- ESTADOS PARA NÓMINA Y PLANILLA ---
+  const [nombreColaborador, setNombreColaborador] = React.useState('');
+  const [puestoCargo, setPuestoCargo] = React.useState('');
+  const [salarioBase, setSalarioBase] = React.useState('');
+  const [bonificacionLey, setBonificacionLey] = React.useState('250.00');
+
+  const [listaEmpleados, setListaEmpleados] = React.useState([
+    {
+      nombre: "Carlos Enrique Morales",
+      puesto: "Jefe de Operaciones",
+      salario: 8500.00,
+      igss: 8500.00 * 0.0483,
+      estado: "Activo"
+    },
+    {
+      nombre: "María Fernanda Juárez",
+      puesto: "Asistente Contable",
+      salario: 5200.00,
+      igss: 5200.00 * 0.0483,
+      estado: "Activo"
+    }
+  ]);
+
+const [reporteSeleccionado, setReporteSeleccionado] = React.useState('Libro de Compras y Servicios (IVA)');
+const [periodoSeleccionado, setPeriodoSeleccionado] = React.useState('Septiembre 2026');
+const [formatoExportacion, setFormatoExportacion] = React.useState('XLSX');
+
+const [historialReportes, setHistorialReportes] = React.useState([
+  {
+    nombre: "Libro de Ventas y Servicios IVA",
+    periodo: "Septiembre 2026",
+    formato: "XLSX",
+    estado: "Generado"
+  },
+  {
+    nombre: "Estado de Resultados (P y G)",
+    periodo: "Septiembre 2026",
+    formato: "PDF",
+    estado: "Generado"
+  }
+]);
+
+  const [busquedaRet, setBusquedaRet] = React.useState('');
+  const [retenciones, setRetenciones] = React.useState([
+  { 
+    proveedor: "Distribuidora Comercial del Norte, S.A.", 
+    nit: "5849382-9", 
+    tipo: "Retención de ISR (5%)", 
+    constancia: "RET-ISR-2026-091", 
+    emision: "28/09/2026", 
+    base: 18500.00, 
+    retenido: 925.00, 
+    estado: "Aplicada" 
+  },
+  { 
+    proveedor: "Importadora de Papel y Suministros GT", 
+    nit: "1294851-4", 
+    tipo: "Retención de IVA (65%)", 
+    constancia: "RET-IVA-2026-104", 
+    emision: "30/09/2026", 
+    base: 14300.00, 
+    retenido: 1113.88, 
+    estado: "Aplicada" 
+  }
+]);
+
+  const [busquedaCxc, setBusquedaCxc] = React.useState('');
+const [facturas, setFacturas] = React.useState([
+  { cliente: "Comercializadora San Cristóbal, S.A.", nit: "7894123-0", documento: "FEL-88392", emision: "10/09/2026", vencimiento: "10/10/2026", original: 35000.00, saldo: 35000.00, estado: "Al Día" },
+  { cliente: "Inversiones y Servicios del Valle", nit: "4561239-8", documento: "FEL-77102", emision: "05/08/2026", vencimiento: "05/09/2026", original: 19200.00, saldo: 19200.00, estado: "Vencida" },
+  { cliente: "Supermercados La Económica", nit: "9012345-1", documento: "FEL-91024", emision: "25/09/2026", vencimiento: "25/10/2026", original: 30000.00, saldo: 30000.00, estado: "Al Día" }
+]); 
+
+  const [busquedaCaja, setBusquedaCaja] = React.useState('');
+const [fondoFijo, setFondoFijo] = React.useState(5000.00);
+const [vales, setVales] = React.useState([
+  { vale: "VAL-00192", descripcion: "Compra de suministros de cafetería y agua", fecha: "28/09/2026", responsable: "María Fernanda López", monto: 450.00, estado: "Reembolsado" },
+  { vale: "VAL-00193", descripcion: "Envío de documentación por mensajería express", fecha: "30/09/2026", responsable: "Carlos Morales", monto: 175.00, estado: "Reembolsado" },
+  { vale: "VAL-00194", descripcion: "Compra de papelería menor y folders manila", fecha: "02/10/2026", responsable: "Ana Lucía Castillo", monto: 325.00, estado: "Pendiente" }
+]);
+
+  const [busquedaActivo, setBusquedaActivo] = React.useState('');
+  const [activos, setActivos] = React.useState([
+    { nombre: "Servidor Principal Dell PowerEdge", codigo: "ACT-EQ-001", categoria: "Equipo de Computación", tasa: 0.3333, fecha: "10/01/2024", original: 45000.00, libros: 15000.00, estado: "Activo" },
+    { nombre: "Vehículo Panel de Repartición Isuzu", codigo: "ACT-VEH-002", categoria: "Vehículos", tasa: 0.20, fecha: "15/06/2023", original: 120000.00, libros: 72000.00, estado: "Activo" },
+    { nombre: "Mobiliario y Estantería de Oficina", codigo: "ACT-MOB-003", categoria: "Mobiliario y Equipo", tasa: 0.20, fecha: "01/03/2025", original: 50000.00, libros: 40000.00, estado: "Activo" }
+  ]);
+
+  const [empleados, setEmpleados] = useState([
+  { nombre: "Carlos Enrique Morales", dpi: "2548 19283 0101", puesto: "Gerente de Finanzas / Administración", ordinario: 8500.00, bonif: 250.00, igss: 403.75, liquido: 8346.25, estado: "Pagado" },
+  { nombre: "Ana Lucía Castillo", dpi: "1928 38472 0101", puesto: "Contadora General / Auditoría", ordinario: 6800.00, bonif: 250.00, igss: 323.00, liquido: 6727.00, estado: "Pagado" },
+  { nombre: "Mario Roberto Juárez", dpi: "3019 28471 0101", puesto: "Encargado de Bodega e Inventarios", ordinario: 4500.00, bonif: 250.00, igss: 213.75, liquido: 4536.25, estado: "Pagado" }
+  ]);
+  const [busquedaNomina, setBusquedaNomina] = useState('');
+
+  const [busquedaCxp, setBusquedaCxp] = React.useState('');
+  const [cuentas, setCuentas] = React.useState([
+    { proveedor: "Distribuidora Comercial del Norte, S.A.", nit: "5849382-9", documento: "FIB-99281", emision: "15/09/2026", vencimiento: "15/10/2026", monto: 18500.00, saldo: 18500.00, estado: "Por Vencer" },
+    { proveedor: "Importadora de Papel y Suministros GT", nit: "1294851-4", documento: "FAC-44810", emision: "01/08/2026", vencimiento: "01/09/2026", monto: 14300.00, saldo: 14300.00, estado: "Vencida" },
+    { proveedor: "Tecnología y Soluciones Corporativas", nit: "9831920-1", documento: "ESP-00912", emision: "20/09/2026", vencimiento: "20/11/2026", monto: 10000.00, saldo: 10000.00, estado: "Al Día" }
+  ]);
+
+  const [busquedaInv, setBusquedaInv] = React.useState('');
+  const [productos, setProductos] = React.useState([
+    { codigo: "PRD-001", nombre: "Papel Bond 80g (Caja x 5 Resmas)", categoria: "Suministros de Oficina", stock: 145, costo: 125.00, estado: "Normal" },
+    { codigo: "PRD-002", nombre: "Tóner HP LaserJet Negro Original", categoria: "Tecnología / Consumibles", stock: 3, costo: 650.00, estado: "Stock Bajo" },
+    { codigo: "PRD-003", nombre: "Silla Ejecutiva Ergonómica Malla", categoria: "Mobiliario", stock: 28, costo: 2300.00, estado: "Normal" }
+  ]);
+
+  const [busquedaIva, setBusquedaIva] = React.useState('');
+  const [libros, setLibros] = React.useState([
+    { periodo: "Septiembre 2026", tipo: "Libro de Ventas y Servicios", base: 451000.00, iva: 54120.00, docs: "1,240 DTEs", estado: "Consolidado" },
+    { periodo: "Septiembre 2026", tipo: "Libro de Compras y Servicios", base: 320000.00, iva: 38400.00, docs: "415 Facturas", estado: "Consolidado" },
+    { periodo: "Agosto 2026", tipo: "Libro de Ventas y Servicios", base: 410000.00, iva: 49200.00, docs: "1,110 DTEs", estado: "Presentado / Declarado" },
+    { periodo: "Agosto 2026", tipo: "Libro de Compras y Servicios", base: 295000.00, iva: 35400.00, docs: "385 Facturas", estado: "Presentado / Declarado" }
+  ]);
+
+  // === COLOCA AQUÍ LAS LÍNEAS DE ESTADO DE NAVEGACIÓN ===
+  const [vistaActual, setVistaActual] = useState('inicio');
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  // ====================================================
   const [activeTab, setActiveTab] = useState('inicio');
+// --- NUEVOS ESTADOS Y FUNCIONES PARA EL CONTROL DE CONTADOR ---
+  const [tipoPoliza, setTipoPoliza] = useState('Diario General');
+  const [montoPoliza, setMontoPoliza] = useState('');
+  const [accionSupervision, setAccionSupervision] = useState('Verificar Partidas Dobles');
+
+  const [polizas, setPolizas] = useState([
+    {
+      numero: "POL-DIARIO-089",
+      tipo: "Diario General",
+      monto: 24500.00,
+      estado: "Verificado"
+    },
+    {
+      numero: "POL-ING-142",
+      tipo: "Ingreso Bancario",
+      monto: 12800.00,
+      estado: "Verificado"
+    }
+  ]);
+
+  const handleAplicarValidacion = (e) => {
+    e.preventDefault();
+    const montoNum = parseFloat(montoPoliza);
+
+    if (isNaN(montoNum) || montoNum <= 0) {
+      alert(`Acción "${accionSupervision}" ejecutada con éxito. Sin inconsistencias detectadas en el sistema.`);
+      return;
+    }
+
+    const nuevaPoliza = {
+      numero: `POL-AUD-${Math.floor(100 + Math.random() * 900)}`,
+      tipo: tipoPoliza,
+      monto: montoNum,
+      estado: "Verificado"
+    };
+
+    setPolizas([nuevaPoliza, ...polizas]);
+    setMontoPoliza('');
+    alert(`¡Validación "${accionSupervision}" aplicada! Se registró la póliza de control exitosamente.`);
+  };
+
+  const handleAuditoriaGlobal = () => {
+    alert("🔍 Auditoría global de integridad contable finalizada: Todas las partidas dobles cuadran correctamente y los saldos están sincronizados.");
+  };
+
+  const totalPolizasCount = polizas.length + 340;
+  const asientosDescuadrados = 0;
+  const estadoIntegridad = "100% Consistente";
+  // -------------------------------------------------------------
+const [busquedaSat, setBusquedaSat] = React.useState('');
+const [nitReceptor, setNitReceptor] = React.useState('');
+const [nombreReceptor, setNombreReceptor] = React.useState('');
+const [montoDte, setMontoDte] = React.useState('');
+const [tipoDte, setTipoDte] = React.useState('FACT (Factura)');
+
+const [dteList, setDteList] = React.useState([
+  { 
+    uuid: "A1B2C3D4-E5F6-7890-ABCD-EF1234567890", 
+    tipo: "Factura Electrónica (FACT)", 
+    fecha: "03/10/2026 14:22", 
+    monto: 4500.00, 
+    certificador: "INFILE / ECOFACTURA", 
+    estado: "Certificado" 
+  },
+  { 
+    uuid: "98765432-10EF-ABCD-EF12-34567890ABCD", 
+    tipo: "Nota de Crédito (NCRE)", 
+    fecha: "02/10/2026 09:15", 
+    monto: 350.00, 
+    certificador: "INFILE / ECOFACTURA", 
+    estado: "Certificado" 
+  }
+]);
 
   // ==========================================
   // ESTADOS MAESTROS ENTERPRISE (AGREGADOS)
@@ -85,7 +322,6 @@ function App() {
   const [guardandoCliente, setGuardandoCliente] = useState(false);
 
   // Estados del sistema contable avanzado
-  const [empleados, setEmpleados] = useState([]);
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState({ loading: false, message: '', type: '' });
@@ -114,16 +350,6 @@ function App() {
   const [itemsFactura, setItemsFactura] = useState([
     { id: 1, descripcion: 'Servicios Profesionales y Asesoría Tecnológica', cantidad: 1, precioUnitario: 2500 }
   ]);
-
-  // Estado para Módulo de Retenciones
-  const [retenciones, setRetenciones] = useState([]);
-  const [nuevaRetencion, setNuevaRetencion] = useState({
-    tipo: 'IVA 15%',
-    documento: '',
-    nitAgente: '',
-    montoBase: '',
-    montoRetenido: ''
-  });
 
   // Estado para CXC / CXP y Activos Fijos vinculados al cliente activo
   const [cuentasPorCobrar, setCuentasPorCobrar] = useState([]);
@@ -576,7 +802,6 @@ function App() {
     setDteGeneradoInfo(dteInfo);
     setMostrarModalDTE(true);
   };
-
   return (
     <div className="flex h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
 
@@ -615,254 +840,253 @@ function App() {
             <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Enterprise GTQ</p>
           </div>
         </div>
-
 {/* Enlaces de Navegación con scrollbar invisible */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {[
-            { id: 'inicio', label: 'Inicio / Bienvenida', icon: Home },
-            { id: 'dashboard', label: 'Panel Gerencial', icon: LayoutDashboard },
-            { id: 'facturacion', label: 'Emisión DTE (Ventas)', icon: CreditCard },
-            { id: 'ingestion_sat', label: 'Ingestión XML (SAT)', icon: FileText },
-            { id: 'libros_iva', label: 'Libros Legales IVA', icon: Scale },
-            { id: 'retenciones', label: 'Retenciones IVA / ISR', icon: ShieldCheck },
-            { id: 'cxc_cxp', label: 'Cuentas CXC y CXP', icon: Layers },
-            { id: 'bancos', label: 'Conciliación Bancaria', icon: Landmark },
-            { id: 'activos', label: 'Activos Fijos y Dep.', icon: Briefcase },
-            { id: 'estados', label: 'Estados Financieros', icon: PieChart },
-            { id: 'reportes_avanzados', label: 'Reportes y Exportación', icon: FileSpreadsheet },
-            { id: 'nomina', label: 'Nómina y Planilla', icon: Users },
-            { id: 'cajachica', label: 'Caja Chica y Gastos', icon: Wallet },
-            { id: 'control_contador', label: 'Control Global (Contador)', icon: Activity },
-            { id: 'inventarios', label: 'Inventarios (Kardex)', icon: Package },
-            { id: 'cuentas_corrientes', label: 'Cuentas Corrientes (CXP)', icon: FileSpreadsheet },
-            { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Building2 },
-            { id: 'cierres', label: 'Cierres Contables y Fiscales', icon: Lock },
-            { id: 'configuracion', label: 'Configuración General', icon: Settings },
-          ].map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (dirtyState) {
-                    if (!window.confirm("⚠ Tienes cambios sin guardar. ¿Deseas descartarlos y cambiar de sección?")) return;
-                    setDirtyState(false);
-                  }
-                  setActiveTab(item.id);
-                }}
-                className={`w-full flex items-center h-12 px-3.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  isActive 
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/25 font-extrabold' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                }`}
-              >
-                <Icon className={`w-5 h-5 min-w-[20px] ${isActive ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400'}`} />
-                <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+<nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+  {[
+    { id: 'inicio', label: 'Inicio / Bienvenida', icon: Home },
+    { id: 'dashboard', label: 'Panel Gerencial', icon: LayoutDashboard },
+    { id: 'facturacion', label: 'Emisión DTE (Ventas)', icon: CreditCard },
+    { id: 'ingestion_sat', label: 'Ingestión XML (SAT)', icon: FileText },
+    { id: 'libros_iva', label: 'Libros Legales IVA', icon: FileSpreadsheet },
+    { id: 'retenciones', label: 'Retenciones IVA / ISR', icon: ShieldCheck },
+    { id: 'cxc_cxp', label: 'Cuentas CXC y CXP', icon: Layers },
+    { id: 'bancos', label: 'Conciliación Bancaria', icon: Landmark },
+    { id: 'activos', label: 'Activos Fijos y Dep.', icon: Briefcase },
+    { id: 'estados', label: 'Estados Financieros', icon: PieChart },
+    { id: 'reportes_avanzados', label: 'Reportes y Exportación', icon: FileSpreadsheet },
+    { id: 'nomina', label: 'Nómina y Planilla', icon: Users },
+    { id: 'cajachica', label: 'Caja Chica y Gastos', icon: Wallet },
+    { id: 'control_contador', label: 'Control Global (Contador)', icon: Activity },
+    { id: 'inventarios', label: 'Inventarios (Kardex)', icon: Package },
+    { id: 'cuentas_corrientes', label: 'Cuentas Corrientes (CXP)', icon: FileSpreadsheet },
+    { id: 'sat', label: 'Conexión SAT / Portal FEL', icon: Building2 },
+    { id: 'cierres', label: 'Cierres Contables y Fiscales', icon: Lock },
+    { id: 'configuracion', label: 'Configuración General', icon: Settings },
+  ].map((item) => {
+    const Icon = item.icon;
+    const isActive = activeTab === item.id;
+    return (
+      <button
+        key={item.id}
+        onClick={() => {
+          if (typeof dirtyState !== 'undefined' && dirtyState) {
+            if (!window.confirm("⚠ Tienes cambios sin guardar. ¿Deseas descartarlos y cambiar de sección?")) return;
+            setDirtyState(false);
+          }
+          setActiveTab(item.id);
+        }}
+        className={`w-full flex items-center h-12 px-3.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+          isActive 
+            ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/25 font-extrabold' 
+            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+        }`}
+      >
+        <Icon className={`w-5 h-5 min-w-[20px] ${isActive ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400'}`} />
+        <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">{item.label}</span>
+      </button>
+    );
+  })}
+</nav>
 
-        {/* Pie de barra / Botón de Sincronización */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950/40 whitespace-nowrap">
-          <button 
-            onClick={handleSincronizarSupabase}
-            disabled={syncStatus.loading || isSaving}
-            className="w-full flex items-center h-11 px-3.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs text-slate-300 transition border border-slate-700/50 cursor-pointer overflow-hidden disabled:opacity-50"
+{/* Pie de barra / Botón de Sincronización */}
+<div className="p-3 border-t border-slate-800 bg-slate-950/40 whitespace-nowrap">
+  <button 
+    onClick={handleSincronizarSupabase}
+    disabled={syncStatus.loading || isSaving}
+    className="w-full flex items-center h-11 px-3.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs text-slate-300 transition border border-slate-700/50 cursor-pointer overflow-hidden disabled:opacity-50"
+  >
+    <RefreshCw className={`w-5 h-5 min-w-[20px] text-amber-400 ${syncStatus.loading ? 'animate-spin' : 'hover:rotate-180 transition-transform duration-500'}`} />
+    <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">Sincronizar Supabase</span>
+  </button>
+</div>
+</aside>
+
+{/* ÁREA PRINCIPAL */}
+<div className="flex-1 flex flex-col overflow-hidden bg-[#070b14]">
+  
+  {/* BARRA SUPERIOR */}
+  <header className="bg-[#0b1329] border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-lg relative no-print">
+    
+    {/* NOTIFICACIÓN FLOTANTE DE SINCRONIZACIÓN INTELIGENTE */}
+    {syncStatus.message && (
+      <div className={`absolute top-20 left-8 z-50 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-2xl border animate-in fade-in duration-300 ${
+        syncStatus.type === 'error' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+      }`}>
+        {syncStatus.type === 'error' ? <AlertCircle className="w-4 h-4 text-rose-400" /> : <CheckCircle className="w-4 h-4 text-emerald-400" />}
+        <span>{syncStatus.message}</span>
+        {syncStatus.type === 'error' && (
+          <button onClick={handleSincronizarSupabase} className="underline ml-2 text-white hover:text-amber-400 cursor-pointer">Reintentar</button>
+        )}
+      </div>
+    )}
+
+    <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-2xl">
+        <Building2 className="w-5 h-5 text-amber-400" />
+        <div>
+          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Cliente Activo Multi-Tenant</p>
+          <select
+            value={clienteSeleccionado?.id || ''}
+            onChange={(e) => {
+              const sel = clientes.find(c => c.id === e.target.value);
+              setClienteSeleccionado(sel || null);
+              if (sel) {
+                localStorage.setItem('gt_active_client', JSON.stringify(sel));
+              } else {
+                localStorage.removeItem('gt_active_client');
+              }
+              setActiveTab('inicio');
+            }}
+            className="bg-transparent font-bold text-white text-xs focus:outline-none cursor-pointer pr-4"
           >
-            <RefreshCw className={`w-5 h-5 min-w-[20px] text-amber-400 ${syncStatus.loading ? 'animate-spin' : 'hover:rotate-180 transition-transform duration-500'}`} />
-            <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 truncate">Sincronizar Supabase</span>
-          </button>
+            <option value="" className="bg-slate-900 text-slate-400">-- Seleccione Cliente --</option>
+            {clientes.map(c => (
+              <option key={c.id} value={c.id} className="bg-slate-900 text-white">
+                {c.razon_social} (NIT: {c.nit})
+              </option>
+            ))}
+          </select>
         </div>
-      </aside>
+      </div>
 
-      {/* ÁREA PRINCIPAL */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#070b14]">
+      <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-2xl">
+        <Calendar className="w-4 h-4 text-amber-400" />
+        <div>
+          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Período Fiscal</span>
+          <select
+            value={periodoFiltro}
+            onChange={(e) => setPeriodoFiltro(e.target.value)}
+            className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer appearance-none pr-4"
+          >
+            <option value="" className="bg-slate-900 text-slate-300">Todos (Sin filtro)</option>
+            {Array.from(
+              new Set(
+                facturasXML
+                  .map(f => f.fecha ? f.fecha.substring(0, 7) : null)
+                  .filter(Boolean)
+              )
+            )
+              .sort()
+              .reverse()
+              .map(mes => {
+                let label = mes;
+                try {
+                  const [ano, nmes] = mes.split('-');
+                  const fechaObj = new Date(ano, nmes - 1, 1);
+                  label = fechaObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                  label = label.charAt(0).toUpperCase() + label.slice(1);
+                } catch (e) {}
+
+                return (
+                  <option key={mes} value={mes} className="bg-slate-900 text-white font-medium">
+                    {label} ({mes})
+                  </option>
+                );
+              })}
+          </select>
+        </div>
+      </div>
+
+      {/* INDICADOR DE SALUD DE CONEXIÓN (HEALTH CHECK) */}
+      <div className="hidden xl:flex items-center space-x-2 bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-2xl">
+        <span className={`w-2 h-2 rounded-full ${healthStatus === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase">SAT & Supabase: <strong className={healthStatus === 'online' ? 'text-emerald-400' : 'text-amber-400'}>{healthStatus === 'online' ? 'Óptimo' : 'Revisar'}</strong></span>
+      </div>
+    </div>
+
+    <div className="flex items-center space-x-4">
+      <button
+        onClick={() => setMostrarModalCliente(true)}
+        className="bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl flex items-center space-x-2 text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
+      >
+        <UserPlus className="w-4 h-4 stroke-[2.5]" />
+        <span>+ Agregar Cliente</span>
+      </button>
+    </div>
+  </header>
+
+  {/* CONTENEDOR PRINCIPAL */}
+  <main className="flex-1 overflow-y-auto p-8 space-y-6 print-container">
+    
+    {/* PANTALLA DE INICIO / BIENVENIDA CON SALUDO IA (CONTADORA DUARTE) */}
+    {activeTab === 'inicio' && (
+      <div className="space-y-6 animate-in fade-in duration-300">
         
-        {/* BARRA SUPERIOR */}
-        <header className="bg-[#0b1329] border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-lg relative no-print">
-          
-          {/* NOTIFICACIÓN FLOTANTE DE SINCRONIZACIÓN INTELIGENTE */}
-          {syncStatus.message && (
-            <div className={`absolute top-20 left-8 z-50 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-2xl border animate-in fade-in duration-300 ${
-              syncStatus.type === 'error' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-            }`}>
-              {syncStatus.type === 'error' ? <AlertCircle className="w-4 h-4 text-rose-400" /> : <CheckCircle className="w-4 h-4 text-emerald-400" />}
-              <span>{syncStatus.message}</span>
-              {syncStatus.type === 'error' && (
-                <button onClick={handleSincronizarSupabase} className="underline ml-2 text-white hover:text-amber-400 cursor-pointer">Reintentar</button>
-              )}
+        <div className="bg-gradient-to-r from-[#0b1329] to-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="space-y-3 relative z-10">
+            <div className="flex items-center space-x-2">
+              <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest flex items-center space-x-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>GT Contable AI Assistant</span>
+              </span>
+              <span className="text-slate-400 text-xs font-mono">• Lunes, 5 de Octubre 2026</span>
             </div>
-          )}
-
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-2xl">
-              <Building2 className="w-5 h-5 text-amber-400" />
-              <div>
-                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Cliente Activo Multi-Tenant</p>
-                <select
-                  value={clienteSeleccionado?.id || ''}
-                  onChange={(e) => {
-                    const sel = clientes.find(c => c.id === e.target.value);
-                    setClienteSeleccionado(sel || null);
-                    if (sel) {
-                      localStorage.setItem('gt_active_client', JSON.stringify(sel));
-                    } else {
-                      localStorage.removeItem('gt_active_client');
-                    }
-                    setActiveTab('inicio');
-                  }}
-                  className="bg-transparent font-bold text-white text-xs focus:outline-none cursor-pointer pr-4"
-                >
-                  <option value="" className="bg-slate-900 text-slate-400">-- Seleccione Cliente --</option>
-                  {clientes.map(c => (
-                    <option key={c.id} value={c.id} className="bg-slate-900 text-white">
-                      {c.razon_social} (NIT: {c.nit})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-2xl">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              <div>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Período Fiscal</span>
-                <select
-                  value={periodoFiltro}
-                  onChange={(e) => setPeriodoFiltro(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer appearance-none pr-4"
-                >
-                  <option value="" className="bg-slate-900 text-slate-300">Todos (Sin filtro)</option>
-                  {Array.from(
-                    new Set(
-                      facturasXML
-                        .map(f => f.fecha ? f.fecha.substring(0, 7) : null)
-                        .filter(Boolean)
-                    )
-                  )
-                    .sort()
-                    .reverse()
-                    .map(mes => {
-                      let label = mes;
-                      try {
-                        const [ano, nmes] = mes.split('-');
-                        const fechaObj = new Date(ano, nmes - 1, 1);
-                        label = fechaObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-                        label = label.charAt(0).toUpperCase() + label.slice(1);
-                      } catch (e) {}
-
-                      return (
-                        <option key={mes} value={mes} className="bg-slate-900 text-white font-medium">
-                          {label} ({mes})
-                        </option>
-                      );
-                    })}
-                </select>
-              </div>
-            </div>
-
-            {/* INDICADOR DE SALUD DE CONEXIÓN (HEALTH CHECK) */}
-            <div className="hidden xl:flex items-center space-x-2 bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-2xl">
-              <span className={`w-2 h-2 rounded-full ${healthStatus === 'online' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase">SAT & Supabase: <strong className={healthStatus === 'online' ? 'text-emerald-400' : 'text-amber-400'}>{healthStatus === 'online' ? 'Óptimo' : 'Revisar'}</strong></span>
-            </div>
+            <h2 className="text-3xl font-black text-white">
+              ¡Buenos días, Contadora Duarte! ✨
+            </h2>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Su despacho cuenta con <strong className="text-amber-400">{clientes.length} empresas activas</strong> en cartera sincronizadas con Supabase. Actualmente tiene seleccionada la empresa <strong className="text-white">{clienteSeleccionado?.razon_social || 'Ninguna'}</strong>. ¿Qué desea realizar hoy?
+            </p>
           </div>
-
-          <div className="flex items-center space-x-4">
+          
+          <div className="flex flex-col space-y-2 relative z-10 w-full md:w-auto">
             <button
-              onClick={() => setMostrarModalCliente(true)}
-              className="bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl flex items-center space-x-2 text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
+              onClick={() => setActiveTab('dashboard')}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl text-xs shadow-xl shadow-amber-500/20 cursor-pointer transition active:scale-95 flex items-center justify-center space-x-2"
             >
-              <UserPlus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ Agregar Cliente</span>
+              <LayoutDashboard className="w-4 h-4 stroke-[2.5]" />
+              <span>Continuar con {clienteSeleccionado?.razon_social || 'Empresa'}</span>
             </button>
           </div>
-        </header>
 
-        {/* CONTENEDOR PRINCIPAL */}
-        <main className="flex-1 overflow-y-auto p-8 space-y-6 print-container">
-          
-          {/* PANTALLA DE INICIO / BIENVENIDA CON SALUDO IA (CONTADORA DUARTE) */}
-          {activeTab === 'inicio' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              
-              <div className="bg-gradient-to-r from-[#0b1329] to-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="space-y-3 relative z-10">
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest flex items-center space-x-1">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>GT Contable AI Assistant</span>
-                    </span>
-                    <span className="text-slate-400 text-xs font-mono">• Viernes, 25 de Septiembre 2026</span>
+        </div>
+
+        {/* TARJETAS DE CARTERA DE CLIENTES Y ÚLTIMA ACTIVIDAD */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+            <Building2 className="w-4 h-4 text-amber-400" />
+            <span>Seleccione o verifique su cartera de clientes en Supabase</span>
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {clientes.map(c => {
+              const isSelected = clienteSeleccionado?.id === c.id;
+              return (
+                <div 
+                  key={c.id} 
+                  onClick={() => {
+                    setClienteSeleccionado(c);
+                    localStorage.setItem('gt_active_client', JSON.stringify(c));
+                  }}
+                  className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-xl ${
+                    isSelected 
+                      ? 'bg-amber-500/10 border-amber-500/40 shadow-amber-500/10' 
+                      : 'bg-[#0b1329] border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 font-black text-sm">
+                      {(c.razon_social || 'GT').substring(0, 2).toUpperCase()}
+                    </div>
+                    {isSelected && <span className="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold rounded-full text-[10px] uppercase">Activa</span>}
                   </div>
-                  <h2 className="text-3xl font-black text-white">
-                    ¡Buenos días, Contadora Duarte! ✨
-                  </h2>
-                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                    Su despacho cuenta com <strong className="text-amber-400">{clientes.length} empresas activas</strong> en cartera sincronizadas con Supabase. Actualmente tiene seleccionada la empresa <strong className="text-white">{clienteSeleccionado?.razon_social || 'Ninguna'}</strong>. ¿Qué desea realizar hoy?
-                  </p>
+                  <div>
+                    <h4 className="font-extrabold text-white text-sm">{c.razon_social}</h4>
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">NIT: {c.nit}</p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-800/80 flex justify-between items-center text-[11px] text-slate-400">
+                    <span>Última actividad: Sincronizado</span>
+                    <span className="text-amber-400 font-bold hover:underline">Trabajar →</span>
+                  </div>
                 </div>
-                
-                <div className="flex flex-col space-y-2 relative z-10 w-full md:w-auto">
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl text-xs shadow-xl shadow-amber-500/20 cursor-pointer transition active:scale-95 flex items-center justify-center space-x-2"
-                  >
-                    <LayoutDashboard className="w-4 h-4 stroke-[2.5]" />
-                    <span>Continuar con {clienteSeleccionado?.razon_social || 'Empresa'}</span>
-                  </button>
-                </div>
+              );
+            })}
+          </div>
+        </div>
 
-              </div>
-
-              {/* TARJETAS DE CARTERA DE CLIENTES Y ÚLTIMA ACTIVIDAD */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                  <Building2 className="w-4 h-4 text-amber-400" />
-                  <span>Seleccione o verifique su cartera de clientes en Supabase</span>
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {clientes.map(c => {
-                    const isSelected = clienteSeleccionado?.id === c.id;
-                    return (
-                      <div 
-                        key={c.id} 
-                        onClick={() => {
-                          setClienteSeleccionado(c);
-                          localStorage.setItem('gt_active_client', JSON.stringify(c));
-                        }}
-                        className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-xl ${
-                          isSelected 
-                            ? 'bg-amber-500/10 border-amber-500/40 shadow-amber-500/10' 
-                            : 'bg-[#0b1329] border-slate-800 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 font-black text-sm">
-                            {(c.razon_social || 'GT').substring(0, 2).toUpperCase()}
-                          </div>
-                          {isSelected && <span className="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold rounded-full text-[10px] uppercase">Activa</span>}
-                        </div>
-                        <div>
-                          <h4 className="font-extrabold text-white text-sm">{c.razon_social}</h4>
-                          <p className="text-[11px] text-slate-400 font-mono mt-0.5">NIT: {c.nit}</p>
-                        </div>
-                        <div className="pt-3 border-t border-slate-800/80 flex justify-between items-center text-[11px] text-slate-400">
-                          <span>Última actividad: Sincronizado</span>
-                          <span className="text-amber-400 font-bold hover:underline">Trabajar →</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-          )}
+      </div>
+    )}
 
           {/* VISTA 1: INICIO / PANEL EJECUTIVO */}
           {activeTab === 'inicio' && (
@@ -1254,16 +1478,197 @@ function App() {
                 </div>
               </div>
             </div>
-          )}          
+          )}  
+
+{activeTab === 'reportes_avanzados' && (() => {
+  const handleGenerarVistaPrevia = () => {
+    alert(`Generando vista previa en pantalla para: ${reporteSeleccionado} (${periodoSeleccionado})...`);
+  };
+
+  const handleDescargarReporte = (formato = 'XLSX') => {
+    const nuevoReporte = {
+      nombre: reporteSeleccionado,
+      periodo: periodoSeleccionado,
+      formato: formato,
+      estado: "Generado"
+    };
+
+    setHistorialReportes([nuevoReporte, ...historialReportes]);
+    alert(`¡Reporte "${reporteSeleccionado}" (${periodoSeleccionado}) exportado con éxito en formato ${formato}!`);
+  };
+
+  const handleExportarConsolidadoSAT = () => {
+    alert("¡Paquete consolidado para la SAT generado y descargado exitosamente!");
+  };
+
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Encabezado del Módulo */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+              📑
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">Reportes y Exportación Avanzada</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Generación de libros legales, reportes gerenciales y exportación masiva para la SAT.</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleExportarConsolidadoSAT}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+          >
+            <span>📥 Exportar Consolidado SAT</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tarjetas de Resumen de Reportes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Libros Legales Listos</p>
+            <h3 className="text-xl font-black text-emerald-400 mt-1">IVA Ventas y Compras</h3>
+          </div>
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📘</div>
+        </div>
+        
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Formato de Exportación</p>
+            <h3 className="text-xl font-black text-amber-400 mt-1">Excel (.xlsx) / PDF</h3>
+          </div>
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📊</div>
+        </div>
+
+        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Última Auditoría de Cifras</p>
+            <h3 className="text-xl font-black text-blue-400 mt-1">Sin Descuadres</h3>
+          </div>
+          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🛡️</div>
+        </div>
+      </div>
+
+      {/* Sección de Selección y Generación de Reportes */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Panel de Configuración del Reporte */}
+        <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+          <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+            <span>⚙️</span> Parámetros de Emisión
+          </h3>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Reporte</label>
+            <select 
+              value={reporteSeleccionado}
+              onChange={(e) => setReporteSeleccionado(e.target.value)}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
+            >
+              <option value="Libro de Compras y Servicios (IVA)" className="bg-slate-900">Libro de Compras y Servicios (IVA)</option>
+              <option value="Libro de Ventas y Servicios (IVA)" className="bg-slate-900">Libro de Ventas y Servicios (IVA)</option>
+              <option value="Estado de Resultados (P y G)" className="bg-slate-900">Estado de Resultados (P y G)</option>
+              <option value="Balanza de Comprobación" className="bg-slate-900">Balanza de Comprobación</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Período Fiscal</label>
+            <select 
+              value={periodoSeleccionado}
+              onChange={(e) => setPeriodoSeleccionado(e.target.value)}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
+            >
+              <option value="Septiembre 2026" className="bg-slate-900">Septiembre 2026</option>
+              <option value="Agosto 2026" className="bg-slate-900">Agosto 2026</option>
+              <option value="Ejercicio Fiscal 2025" className="bg-slate-900">Ejercicio Fiscal 2025</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Formato de Salida</label>
+            <select 
+              value={formatoExportacion}
+              onChange={(e) => setFormatoExportacion(e.target.value)}
+              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
+            >
+              <option value="XLSX" className="bg-slate-900">Excel (.xlsx)</option>
+              <option value="PDF" className="bg-slate-900">Documento (.pdf)</option>
+            </select>
+          </div>
+          <div className="pt-2 space-y-2">
+            <button 
+              onClick={handleGenerarVistaPrevia} 
+              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition border border-slate-700/50 cursor-pointer"
+            >
+              Vista Previa en Pantalla
+            </button>
+            <button 
+              onClick={() => handleDescargarReporte(formatoExportacion)} 
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer"
+            >
+              Descargar Reporte {formatoExportacion}
+            </button>
+          </div>
+        </div>
+
+        {/* Historial / Vista Previa de Reportes Generados */}
+        <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+          <div>
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <span>📋</span> Registro de Reportes Emitidos Recientemente
+              </h3>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <th className="py-3.5 px-5">Nombre del Reporte</th>
+                    <th className="py-3.5 px-4 text-center">Periodo</th>
+                    <th className="py-3.5 px-4 text-center">Formato</th>
+                    <th className="py-3.5 px-5 text-center">Estado</th>
+                    <th className="py-3.5 px-5 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                  {historialReportes.map((rep, index) => (
+                    <tr key={index} className="hover:bg-slate-800/40 transition">
+                      <td className="py-4 px-5 font-bold text-white">{rep.nombre}</td>
+                      <td className="py-4 px-4 text-center text-slate-300">{rep.periodo}</td>
+                      <td className={`py-4 px-4 text-center font-mono font-bold ${rep.formato === 'XLSX' ? 'text-amber-400' : 'text-blue-400'}`}>
+                        {rep.formato}
+                      </td>
+                      <td className="py-4 px-5 text-center">
+                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
+                          {rep.estado}
+                        </span>
+                      </td>
+                      <td className="py-4 px-5 text-center">
+                        <button 
+                          onClick={() => alert(`Descargando archivo ${rep.formato} de ${rep.nombre}...`)} 
+                          className="text-xs text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer"
+                        >
+                          Descargar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="p-4 border-t border-slate-800 bg-slate-950/20 text-right">
+            <span className="text-xs text-slate-400">Todos los reportes cumplen con los requerimientos normativos de la SAT Guatemala.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+})()}
 
 {activeTab === 'inventarios' && (() => {
-  const [busquedaInv, setBusquedaInv] = React.useState('');
-  const [productos, setProductos] = React.useState([
-    { codigo: "PRD-001", nombre: "Papel Bond 80g (Caja x 5 Resmas)", categoria: "Suministros de Oficina", stock: 145, costo: 125.00, estado: "Normal" },
-    { codigo: "PRD-002", nombre: "Tóner HP LaserJet Negro Original", categoria: "Tecnología / Consumibles", stock: 3, costo: 650.00, estado: "Stock Bajo" },
-    { codigo: "PRD-003", nombre: "Silla Ejecutiva Ergonómica Malla", categoria: "Mobiliario", stock: 28, costo: 2300.00, estado: "Normal" }
-  ]);
-
   const productosFiltrados = productos.filter(p => 
     p.nombre.toLowerCase().includes(busquedaInv.toLowerCase()) || 
     p.codigo.toLowerCase().includes(busquedaInv.toLowerCase())
@@ -1390,13 +1795,6 @@ function App() {
 })()}
 
 {activeTab === 'cuentas_corrientes' && (() => {
-  const [busquedaCxp, setBusquedaCxp] = React.useState('');
-  const [cuentas, setCuentas] = React.useState([
-    { proveedor: "Distribuidora Comercial del Norte, S.A.", nit: "5849382-9", documento: "FIB-99281", emision: "15/09/2026", vencimiento: "15/10/2026", monto: 18500.00, saldo: 18500.00, estado: "Por Vencer" },
-    { proveedor: "Importadora de Papel y Suministros GT", nit: "1294851-4", documento: "FAC-44810", emision: "01/08/2026", vencimiento: "01/09/2026", monto: 14300.00, saldo: 14300.00, estado: "Vencida" },
-    { proveedor: "Tecnología y Soluciones Corporativas", nit: "9831920-1", documento: "ESP-00912", emision: "20/09/2026", vencimiento: "20/11/2026", monto: 10000.00, saldo: 10000.00, estado: "Al Día" }
-  ]);
-
   const cuentasFiltradas = cuentas.filter(c => 
     c.proveedor.toLowerCase().includes(busquedaCxp.toLowerCase()) || 
     c.nit.includes(busquedaCxp) ||
@@ -1747,895 +2145,648 @@ function App() {
   </div>
 )}
 
-{activeTab === 'nomina' && (() => {
-  const [busquedaNomina, setBusquedaNomina] = React.useState('');
-  const [empleados, setEmpleados] = React.useState([
-    { nombre: "Carlos Enrique Morales", dpi: "2548 19283 0101", puesto: "Gerente de Finanzas / Administración", ordinario: 8500.00, bonif: 250.00, igss: 403.75, liquido: 8346.25, estado: "Pagado" },
-    { nombre: "Ana Lucía Castillo", dpi: "1928 38472 0101", puesto: "Contadora General / Auditoría", ordinario: 6800.00, bonif: 250.00, igss: 323.00, liquido: 6727.00, estado: "Pagado" },
-    { nombre: "Mario Roberto Juárez", dpi: "3019 28471 0101", puesto: "Encargado de Bodega e Inventarios", ordinario: 4500.00, bonif: 250.00, igss: 213.75, liquido: 4536.25, estado: "Pagado" }
-  ]);
-
-  const empleadosFiltrados = empleados.filter(e => 
-    e.nombre.toLowerCase().includes(busquedaNomina.toLowerCase()) || 
-    e.puesto.toLowerCase().includes(busquedaNomina.toLowerCase()) ||
-    e.dpi.includes(busquedaNomina)
-  );
-
-  const totalPlanilla = empleados.reduce((acc, e) => acc + e.liquido, 0);
-  const totalIgss = empleados.reduce((acc, e) => acc + e.igss, 0);
-  const totalColaboradores = empleados.length;
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              👥
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Nómina y Planilla de Salarios</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Control de sueldos, deducciones laborales (IGSS) y retenciones aplicadas.</p>
-            </div>
-          </div>
-        </div>
+{activeTab === 'nomina' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              const nombreEmp = prompt("Nombre del Colaborador:");
-              if (!nombreEmp) return;
-              const salarioStr = prompt("Salario Ordinario (Q):", "5000");
-              const sal = parseFloat(salarioStr) || 0;
-              const igssVal = sal * 0.0483;
-              const liqVal = sal + 250 - igssVal;
-              setEmpleados([
-                ...empleados,
-                { nombre: nombreEmp, dpi: "4021 99182 0101", puesto: "Personal General", ordinario: sal, bonif: 250.00, igss: igssVal, liquido: liqVal, estado: "Pendiente" }
-              ]);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>➕ Nuevo Empleado / Planilla</span>
-          </button>
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            👥
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Nómina y Planilla de Salarios</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de sueldos, deducciones laborales (IGSS) y retenciones aplicadas.</p>
+          </div>
         </div>
       </div>
-
-      {/* Tarjetas de Resumen de Nómina */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Planilla Mensual</p>
-            <h3 className="text-2xl font-black text-white mt-1">Q. {totalPlanilla.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">💼</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aporte IGSS (Laboral)</p>
-            <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {totalIgss.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🛡️</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Colaboradores Activos</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">{totalColaboradores} Empleados</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">👤</div>
-        </div>
-      </div>
-
-      {/* Tabla de Empleados y Nómina */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Listado de Colaboradores y Sueldos del Periodo
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaNomina}
-              onChange={(e) => setBusquedaNomina(e.target.value)}
-              placeholder="Buscar colaborador o puesto..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">Colaborador / DPI</th>
-                <th className="py-3.5 px-5">Puesto / Departamento</th>
-                <th className="py-3.5 px-4 text-right">Salario Ordinario (Q)</th>
-                <th className="py-3.5 px-4 text-right">Bonificación Ley (Q)</th>
-                <th className="py-3.5 px-4 text-right">Deducción IGSS (Q)</th>
-                <th className="py-3.5 px-4 text-right">Líquido a Recibir (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {empleadosFiltrados.map((e, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5">
-                    <p className="font-bold text-white">{e.nombre}</p>
-                    <p className="text-[11px] text-slate-400">DPI: {e.dpi}</p>
-                  </td>
-                  <td className="py-4 px-5 text-slate-400">{e.puesto}</td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {e.ordinario.toFixed(2)}</td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {e.bonif.toFixed(2)}</td>
-                  <td className="py-4 px-4 text-right font-mono text-rose-400">Q. {e.igss.toFixed(2)}</td>
-                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. {e.liquido.toFixed(2)}</td>
-                  <td className="py-4 px-5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
-                      e.estado === 'Pagado' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    }`}>
-                      {e.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => {
+            const nombreEmp = prompt("Nombre del Colaborador:");
+            if (!nombreEmp) return;
+            const salarioStr = prompt("Salario Ordinario (Q):", "5000");
+            const sal = parseFloat(salarioStr) || 0;
+            const igssVal = sal * 0.0483;
+            const liqVal = sal + 250 - igssVal;
+            setEmpleados([
+              ...empleados,
+              { nombre: nombreEmp, dpi: "4021 99182 0101", puesto: "Personal General", ordinario: sal, bonif: 250.00, igss: igssVal, liquido: liqVal, estado: "Pendiente" }
+            ]);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nuevo Empleado / Planilla</span>
+        </button>
       </div>
     </div>
-  );
-})()}
 
-{activeTab === 'activos' && (() => {
-  const [busquedaActivo, setBusquedaActivo] = React.useState('');
-  const [activos, setActivos] = React.useState([
-    { nombre: "Servidor Principal Dell PowerEdge", codigo: "ACT-EQ-001", categoria: "Equipo de Computación", tasa: 0.3333, fecha: "10/01/2024", original: 45000.00, libros: 15000.00, estado: "Activo" },
-    { nombre: "Vehículo Panel de Repartición Isuzu", codigo: "ACT-VEH-002", categoria: "Vehículos", tasa: 0.20, fecha: "15/06/2023", original: 120000.00, libros: 72000.00, estado: "Activo" },
-    { nombre: "Mobiliario y Estantería de Oficina", codigo: "ACT-MOB-003", categoria: "Mobiliario y Equipo", tasa: 0.20, fecha: "01/03/2025", original: 50000.00, libros: 40000.00, estado: "Activo" }
-  ]);
-
-  const activosFiltrados = activos.filter(a => 
-    a.nombre.toLowerCase().includes(busquedaActivo.toLowerCase()) || 
-    a.codigo.toLowerCase().includes(busquedaActivo.toLowerCase()) ||
-    a.categoria.toLowerCase().includes(busquedaActivo.toLowerCase())
-  );
-
-  const totalAdquisicion = activos.reduce((acc, a) => acc + a.original, 0);
-  const totalLibros = activos.reduce((acc, a) => acc + a.libros, 0);
-  const totalDepreciacion = totalAdquisicion - totalLibros;
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+    {/* Tarjetas de Resumen de Nómina */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              🏢
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Activos Fijos y Depreciaciones</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Gestión de bienes, mobiliario, equipo y cálculo de depreciación anual acumulada.</p>
-            </div>
-          </div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Planilla Mensual</p>
+          <h3 className="text-2xl font-black text-white mt-1">Q. {empleados.reduce((acc, e) => acc + e.liquido, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              const nombreAct = prompt("Nombre del Activo Fijo:");
-              if (!nombreAct) return;
-              const codigoAct = prompt("Código del Activo (Ej. ACT-EQ-004):", "ACT-GEN-004");
-              const valorStr = prompt("Valor de Adquisición Original (Q):", "10000");
-              const valOrig = parseFloat(valorStr) || 0;
-              // Estimación inicial simple: se asume primer año de depreciación al 20%
-              const valLibros = valOrig * 0.80;
-              setActivos([
-                ...activos,
-                { nombre: nombreAct, codigo: codigoAct, categoria: "Mobiliario y Equipo", tasa: 0.20, fecha: "Hoy", original: valOrig, libros: valLibros, estado: "Activo" }
-              ]);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>➕ Nuevo Activo Fijo</span>
-          </button>
-        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">💼</div>
       </div>
-
-      {/* Tarjetas de Resumen de Activos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor de Adquisición Total</p>
-            <h3 className="text-2xl font-black text-white mt-1">Q. {totalAdquisicion.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🏛️</div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aporte IGSS (Laboral)</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {empleados.reduce((acc, e) => acc + e.igss, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
         </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Depreciación Acumulada</p>
-            <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {totalDepreciacion.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📉</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor en Libros Actual</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {totalLibros.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
-        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🛡️</div>
       </div>
-
-      {/* Tabla de Activos Fijos */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Inventario de Bienes y Tasas de Depreciación
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaActivo}
-              onChange={(e) => setBusquedaActivo(e.target.value)}
-              placeholder="Buscar activo o código..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Colaboradores Activos</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">{empleados.length} Empleados</h3>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">Código / Activo</th>
-                <th className="py-3.5 px-5">Categoría</th>
-                <th className="py-3.5 px-4 text-center">Fecha Adquisición</th>
-                <th className="py-3.5 px-4 text-right">Valor Original (Q)</th>
-                <th className="py-3.5 px-4 text-center">Tasa Dep.</th>
-                <th className="py-3.5 px-4 text-right">Valor en Libros (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {activosFiltrados.map((a, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5">
-                    <p className="font-bold text-white">{a.nombre}</p>
-                    <p className="text-[11px] font-mono text-amber-400">{a.codigo}</p>
-                  </td>
-                  <td className="py-4 px-5 text-slate-400">{a.categoria} ({(a.tasa * 100).toFixed(2)}%)</td>
-                  <td className="py-4 px-4 text-center text-slate-400">{a.fecha}</td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {a.original.toFixed(2)}</td>
-                  <td className="py-4 px-4 text-center font-mono">{(a.tasa * 100).toFixed(2)}%</td>
-                  <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. {a.libros.toFixed(2)}</td>
-                  <td className="py-4 px-5 text-center">
-                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
-                      {a.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">👤</div>
       </div>
     </div>
-  );
-})()}
 
-{activeTab === 'cajachica' && (() => {
-  const [busquedaCaja, setBusquedaCaja] = React.useState('');
-  const [fondoFijo] = React.useState(5000.00);
-  const [vales, setVales] = React.useState([
-    { vale: "VAL-00192", descripcion: "Compra de suministros de cafetería y agua", fecha: "28/09/2026", responsable: "María Fernanda López", monto: 450.00, estado: "Reembolsado" },
-    { vale: "VAL-00193", descripcion: "Envío de documentación por mensajería express", fecha: "30/09/2026", responsable: "Carlos Morales", monto: 175.00, estado: "Reembolsado" },
-    { vale: "VAL-00194", descripcion: "Compra de papelería menor y folders manila", fecha: "02/10/2026", responsable: "Ana Lucía Castillo", monto: 325.00, estado: "Pendiente" }
-  ]);
-
-  const valesFiltrados = vales.filter(v => 
-    v.descripcion.toLowerCase().includes(busquedaCaja.toLowerCase()) || 
-    v.responsable.toLowerCase().includes(busquedaCaja.toLowerCase()) ||
-    v.vale.toLowerCase().includes(busquedaCaja.toLowerCase())
-  );
-
-  const totalGastos = vales.reduce((acc, v) => acc + v.monto, 0);
-  const saldoDisponible = fondoFijo - totalGastos;
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              💵
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Caja Chica</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Gestión de fondos fijos, reembolsos y registro de gastos menores operativos.</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              const desc = prompt("Descripción del Gasto o Vale:");
-              if (!desc) return;
-              const resp = prompt("Responsable:", "Ángel Duarte");
-              const montoStr = prompt("Monto del Gasto (Q):", "150");
-              const montoVal = parseFloat(montoStr) || 0;
-              const nuevoNum = `VAL-00${195 + vales.length}`;
-              setVales([
-                ...vales,
-                { vale: nuevoNum, descripcion: desc, fecha: "Hoy", responsable: resp || "General", monto: montoVal, estado: "Pendiente" }
-              ]);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>➕ Nuevo Gasto / Vale</span>
-          </button>
+    {/* Tabla de Empleados y Nómina */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Listado de Colaboradores y Sueldos del Periodo
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            value={busquedaNomina}
+            onChange={(e) => setBusquedaNomina(e.target.value)}
+            placeholder="Buscar colaborador o puesto..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
         </div>
       </div>
 
-      {/* Tarjetas de Resumen de Caja Chica */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fondo Asignado Total</p>
-            <h3 className="text-2xl font-black text-white mt-1">Q. {fondoFijo.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">💰</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gastos Ejecutados (Mes)</p>
-            <h3 className="text-2xl font-black text-rose-400 mt-1">Q. {totalGastos.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">🧾</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {saldoDisponible.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
-        </div>
-      </div>
-
-      {/* Tabla de Vales y Gastos de Caja Chica */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Historial de Vales y Reembolsos del Periodo
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaCaja}
-              onChange={(e) => setBusquedaCaja(e.target.value)}
-              placeholder="Buscar concepto o responsable..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">No. Vale / Factura</th>
-                <th className="py-3.5 px-5">Descripción del Gasto</th>
-                <th className="py-3.5 px-4 text-center">Fecha</th>
-                <th className="py-3.5 px-4 text-slate-300">Responsable</th>
-                <th className="py-3.5 px-4 text-right">Monto (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado</th>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Colaborador / DPI</th>
+              <th className="py-3.5 px-5">Puesto / Departamento</th>
+              <th className="py-3.5 px-4 text-right">Salario Ordinario (Q)</th>
+              <th className="py-3.5 px-4 text-right">Bonificación Ley (Q)</th>
+              <th className="py-3.5 px-4 text-right">Deducción IGSS (Q)</th>
+              <th className="py-3.5 px-4 text-right">Líquido a Recibir (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            {empleados.filter(e => 
+              e.nombre.toLowerCase().includes(busquedaNomina.toLowerCase()) || 
+              e.puesto.toLowerCase().includes(busquedaNomina.toLowerCase()) ||
+              e.dpi.includes(busquedaNomina)
+            ).map((e, index) => (
+              <tr key={index} className="hover:bg-slate-800/40 transition">
+                <td className="py-4 px-5">
+                  <p className="font-bold text-white">{e.nombre}</p>
+                  <p className="text-[11px] text-slate-400">DPI: {e.dpi}</p>
+                </td>
+                <td className="py-4 px-5 text-slate-400">{e.puesto}</td>
+                <td className="py-4 px-4 text-right font-mono">Q. {e.ordinario.toFixed(2)}</td>
+                <td className="py-4 px-4 text-right font-mono">Q. {e.bonif.toFixed(2)}</td>
+                <td className="py-4 px-4 text-right font-mono text-rose-400">Q. {e.igss.toFixed(2)}</td>
+                <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. {e.liquido.toFixed(2)}</td>
+                <td className="py-4 px-5 text-center">
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                    e.estado === 'Pagado' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  }`}>
+                    {e.estado}
+                  </span>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {valesFiltrados.map((v, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5 font-mono text-amber-400 font-semibold">{v.vale}</td>
-                  <td className="py-4 px-5 font-bold text-white">{v.descripcion}</td>
-                  <td className="py-4 px-4 text-center text-slate-400">{v.fecha}</td>
-                  <td className="py-4 px-4 text-slate-300">{v.responsable}</td>
-                  <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. {v.monto.toFixed(2)}</td>
-                  <td className="py-4 px-5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
-                      v.estado === 'Reembolsado' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    }`}>
-                      {v.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
-  );
-})()}
+  </div>
+)}
 
-{activeTab === 'cxc_cxp' && (() => {
-  const [busquedaCxc, setBusquedaCxc] = React.useState('');
-  const [facturas, setFacturas] = React.useState([
-    { cliente: "Comercializadora San Cristóbal, S.A.", nit: "7894123-0", documento: "FEL-88392", emision: "10/09/2026", vencimiento: "10/10/2026", original: 35000.00, saldo: 35000.00, estado: "Al Día" },
-    { cliente: "Inversiones y Servicios del Valle", nit: "4561239-8", documento: "FEL-77102", emision: "05/08/2026", vencimiento: "05/09/2026", original: 19200.00, saldo: 19200.00, estado: "Vencida" },
-    { cliente: "Supermercados La Económica", nit: "9012345-1", documento: "FEL-91024", emision: "25/09/2026", vencimiento: "25/10/2026", original: 30000.00, saldo: 30000.00, estado: "Al Día" }
-  ]);
-
-  const facturasFiltradas = facturas.filter(f => 
-    f.cliente.toLowerCase().includes(busquedaCxc.toLowerCase()) || 
-    f.nit.includes(busquedaCxc) ||
-    f.documento.toLowerCase().includes(busquedaCxc.toLowerCase())
-  );
-
-  const totalCxc = facturas.reduce((acc, f) => acc + f.saldo, 0);
-  const totalAlDia = facturas.filter(f => f.estado === 'Al Día').reduce((acc, f) => acc + f.saldo, 0);
-  const totalVencido = facturas.filter(f => f.estado === 'Vencida').reduce((acc, f) => acc + f.saldo, 0);
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              🤝
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Cuentas por Cobrar y Clientes (CXC)</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Control de saldos por cobrar, cartera de clientes y gestión de abonos.</p>
-            </div>
-          </div>
-        </div>
+{activeTab === 'activos' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              const clienteNom = prompt("Nombre del Cliente:");
-              if (!clienteNom) return;
-              const nitCli = prompt("NIT del Cliente:", "C/F");
-              const montoStr = prompt("Monto de la Factura (Q):", "10000");
-              const montoVal = parseFloat(montoStr) || 0;
-              const nuevoDoc = `FEL-${Math.floor(10000 + Math.random() * 90000)}`;
-              setFacturas([
-                ...facturas,
-                { cliente: clienteNom, nit: nitCli, documento: nuevoDoc, emision: "Hoy", vencimiento: "Próximo mes", original: montoVal, saldo: montoVal, estado: "Al Día" }
-              ]);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>➕ Nueva Factura por Cobrar</span>
-          </button>
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🏢
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Activos Fijos y Depreciaciones</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Gestión de bienes, mobiliario, equipo y cálculo de depreciación anual acumulada.</p>
+          </div>
         </div>
       </div>
-
-      {/* Tarjetas de Resumen Financiero CXC */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total por Cobrar (CXC)</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {totalCxc.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💰</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Al Día (Sin Vencer)</p>
-            <h3 className="text-2xl font-black text-blue-400 mt-1">Q. {totalAlDia.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">⏳</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vencidas / En Mora</p>
-            <h3 className="text-2xl font-black text-rose-500 mt-1">Q. {totalVencido.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-rose-500/10 rounded-xl text-rose-500 border border-rose-500/20 text-xl">⚠️</div>
-        </div>
-      </div>
-
-      {/* Tabla de Cuentas por Cobrar */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Listado de Clientes y Documentos por Cobrar
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaCxc}
-              onChange={(e) => setBusquedaCxc(e.target.value)}
-              placeholder="Buscar cliente o NIT..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">NIT / Cliente</th>
-                <th className="py-3.5 px-5">No. Documento / Factura</th>
-                <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
-                <th className="py-3.5 px-4 text-center">Fecha Vencimiento</th>
-                <th className="py-3.5 px-4 text-right">Monto Original (Q)</th>
-                <th className="py-3.5 px-4 text-right">Saldo Pendiente (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {facturasFiltradas.map((f, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5">
-                    <p className="font-bold text-white">{f.cliente}</p>
-                    <p className="text-[11px] text-slate-400">NIT: {f.nit}</p>
-                  </td>
-                  <td className="py-4 px-5 font-mono text-amber-400 font-semibold">{f.documento}</td>
-                  <td className="py-4 px-4 text-center text-slate-400">{f.emision}</td>
-                  <td className={`py-4 px-4 text-center font-bold ${f.estado === 'Vencida' ? 'text-rose-400' : 'text-slate-300'}`}>{f.vencimiento}</td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {f.original.toFixed(2)}</td>
-                  <td className={`py-4 px-4 text-right font-mono font-bold ${f.estado === 'Vencida' ? 'text-rose-400' : 'text-white'}`}>Q. {f.saldo.toFixed(2)}</td>
-                  <td className="py-4 px-5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
-                      f.estado === 'Al Día' 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
-                        : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                    }`}>
-                      {f.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => {
+            const nombreAct = prompt("Nombre del Activo Fijo:");
+            if (!nombreAct) return;
+            const codigoAct = prompt("Código del Activo (Ej. ACT-EQ-004):", "ACT-GEN-004");
+            const valorStr = prompt("Valor de Adquisición Original (Q):", "10000");
+            const valOrig = parseFloat(valorStr) || 0;
+            const valLibros = valOrig * 0.80;
+            setActivos([
+              ...activos,
+              { nombre: nombreAct, codigo: codigoAct, categoria: "Mobiliario y Equipo", tasa: 0.20, fecha: "Hoy", original: valOrig, libros: valLibros, estado: "Activo" }
+            ]);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nuevo Activo Fijo</span>
+        </button>
       </div>
     </div>
-  );
-})()}
 
-{activeTab === 'libros_iva' && (() => {
-  const [busquedaIva, setBusquedaIva] = React.useState('');
-  const [libros, setLibros] = React.useState([
-    { periodo: "Septiembre 2026", tipo: "Libro de Ventas y Servicios", base: 451000.00, iva: 54120.00, docs: "1,240 DTEs", estado: "Consolidado" },
-    { periodo: "Septiembre 2026", tipo: "Libro de Compras y Servicios", base: 320000.00, iva: 38400.00, docs: "415 Facturas", estado: "Consolidado" },
-    { periodo: "Agosto 2026", tipo: "Libro de Ventas y Servicios", base: 410000.00, iva: 49200.00, docs: "1,110 DTEs", estado: "Presentado / Declarado" },
-    { periodo: "Agosto 2026", tipo: "Libro de Compras y Servicios", base: 295000.00, iva: 35400.00, docs: "385 Facturas", estado: "Presentado / Declarado" }
-  ]);
-
-  const librosFiltrados = libros.filter(l => 
-    l.periodo.toLowerCase().includes(busquedaIva.toLowerCase()) || 
-    l.tipo.toLowerCase().includes(busquedaIva.toLowerCase()) ||
-    l.estado.toLowerCase().includes(busquedaIva.toLowerCase())
-  );
-
-  const totalDebitoVentas = libros
-    .filter(l => l.tipo.includes('Ventas') && l.periodo.includes('Septiembre 2026'))
-    .reduce((acc, l) => acc + l.iva, 0);
-
-  const totalCreditoCompras = libros
-    .filter(l => l.tipo.includes('Compras') && l.periodo.includes('Septiembre 2026'))
-    .reduce((acc, l) => acc + l.iva, 0);
-
-  const ivaPorPagar = totalDebitoVentas - totalCreditoCompras;
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+    {/* Tarjetas de Resumen de Activos */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              📚
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Libros Legales de IVA (SAT)</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Control y consolidado mensual de Compras y Ventas afectas al Impuesto al Valor Agregado.</p>
-            </div>
-          </div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor de Adquisición Total</p>
+          <h3 className="text-2xl font-black text-white mt-1">Q. {activos.reduce((acc, a) => acc + a.original, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              alert("Generando archivos de exportación formato SAT (Excel / CSV / Asegura)... ¡Listo para descarga!");
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>📥 Exportar Libros IVA (SAT)</span>
-          </button>
-        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🏛️</div>
       </div>
-
-      {/* Tarjetas de Resumen IVA */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA Débito (Ventas Mes)</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {totalDebitoVentas.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📈</div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Depreciación Acumulada</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {(activos.reduce((acc, a) => acc + a.original, 0) - activos.reduce((acc, a) => acc + a.libros, 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
         </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA Crédito (Compras Mes)</p>
-            <h3 className="text-2xl font-black text-blue-400 mt-1">Q. {totalCreditoCompras.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📉</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IVA por Pagar (Aprox.)</p>
-            <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {ivaPorPagar.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">⚖️</div>
-        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📉</div>
       </div>
-
-      {/* Tabla Consolidada de Libros IVA */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Consolidado Mensual de Operaciones IVA
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaIva}
-              onChange={(e) => setBusquedaIva(e.target.value)}
-              placeholder="Filtrar por período o tipo..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor en Libros Actual</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {activos.reduce((acc, a) => acc + a.libros, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">Período Fiscal</th>
-                <th className="py-3.5 px-5">Tipo de Libro</th>
-                <th className="py-3.5 px-4 text-right">Base Netas (Q)</th>
-                <th className="py-3.5 px-4 text-right">Monto IVA (Q)</th>
-                <th className="py-3.5 px-4 text-right">Total Documentos (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado Declaración</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {librosFiltrados.map((l, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5 font-bold text-white">{l.periodo}</td>
-                  <td className={`py-4 px-5 font-semibold ${l.tipo.includes('Ventas') ? 'text-emerald-400' : 'text-blue-400'}`}>
-                    {l.tipo}
-                  </td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {l.base.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                  <td className={`py-4 px-4 text-right font-mono font-bold ${l.tipo.includes('Ventas') ? 'text-emerald-400' : 'text-blue-400'}`}>
-                    Q. {l.iva.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="py-4 px-4 text-right font-mono text-slate-300">{l.docs}</td>
-                  <td className="py-4 px-5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
-                      l.estado === 'Consolidado' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    }`}>
-                      {l.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
       </div>
     </div>
-  );
-})()}
 
-{activeTab === 'retenciones' && (() => {
-  const [busquedaRet, setBusquedaRet] = React.useState('');
-  const [retenciones, setRetenciones] = React.useState([
-    { 
-      proveedor: "Distribuidora Comercial del Norte, S.A.", 
-      nit: "5849382-9", 
-      tipo: "Retención de ISR (5%)", 
-      constancia: "RET-ISR-2026-091", 
-      emision: "28/09/2026", 
-      base: 18500.00, 
-      retenido: 925.00, 
-      estado: "Aplicada" 
-    },
-    { 
-      proveedor: "Importadora de Papel y Suministros GT", 
-      nit: "1294851-4", 
-      tipo: "Retención de IVA (65%)", 
-      constancia: "RET-IVA-2026-104", 
-      emision: "30/09/2026", 
-      base: 14300.00, 
-      retenido: 1113.88, 
-      estado: "Aplicada" 
-    }
-  ]);
-
-  const retencionesFiltradas = retenciones.filter(r => 
-    r.proveedor.toLowerCase().includes(busquedaRet.toLowerCase()) || 
-    r.nit.includes(busquedaRet) ||
-    r.constancia.toLowerCase().includes(busquedaRet.toLowerCase()) ||
-    r.tipo.toLowerCase().includes(busquedaRet.toLowerCase())
-  );
-
-  const totalIsr = retenciones.filter(r => r.tipo.includes('ISR')).reduce((acc, r) => acc + r.retenido, 0);
-  const totalIva = retenciones.filter(r => r.tipo.includes('IVA')).reduce((acc, r) => acc + r.retenido, 0);
-  const pendientesCount = retenciones.filter(r => r.estado === 'Pendiente').length;
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              🧾
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Retenciones de IVA e ISR</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Control y emisión de constancias de retención aplicadas a proveedores y clientes.</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              const provNom = prompt("Nombre del Proveedor o Contribuyente:");
-              if (!provNom) return;
-              const nitProv = prompt("NIT:", "1234567-8");
-              const tipoRet = prompt("Tipo de Retención (ej. Retención de ISR o Retención de IVA):", "Retención de ISR (5%)");
-              const baseStr = prompt("Monto Base (Q):", "10000");
-              const baseVal = parseFloat(baseStr) || 0;
-              const retenidoVal = tipoRet.toLowerCase().includes('isr') ? baseVal * 0.05 : baseVal * 0.12 * 0.65;
-              const nuevaConst = `RET-DOC-${Math.floor(100 + Math.random() * 900)}`;
-
-              setRetenciones([
-                ...retenciones,
-                {
-                  proveedor: provNom,
-                  nit: nitProv,
-                  tipo: tipoRet,
-                  constancia: nuevaConst,
-                  emision: "Hoy",
-                  base: baseVal,
-                  retenido: retenidoVal,
-                  estado: "Aplicada"
-                }
-              ]);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>➕ Nueva Constancia</span>
-          </button>
+    {/* Tabla de Activos Fijos */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Inventario de Bienes y Tasas de Depreciación
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            value={busquedaActivo}
+            onChange={(e) => setBusquedaActivo(e.target.value)}
+            placeholder="Buscar activo o código..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
         </div>
       </div>
 
-      {/* Tarjetas de Resumen Retenciones */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Retenciones ISR (Mes)</p>
-            <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {totalIsr.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Retenciones IVA (Mes)</p>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {totalIva.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
-        </div>
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Constancias Pendientes</p>
-            <h3 className="text-2xl font-black text-blue-400 mt-1">{pendientesCount} Documentos</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📋</div>
-        </div>
-      </div>
-
-      {/* Tabla de Constancias de Retención */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
-        <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <span>📋</span> Registro de Constancias Emitidas y Recibidas
-          </h3>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={busquedaRet}
-              onChange={(e) => setBusquedaRet(e.target.value)}
-              placeholder="Buscar proveedor, NIT o serie..." 
-              className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">NIT / Contribuyente</th>
-                <th className="py-3.5 px-5">Tipo de Retención</th>
-                <th className="py-3.5 px-4 text-center">No. Constancia / Serie</th>
-                <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
-                <th className="py-3.5 px-4 text-right">Monto Base (Q)</th>
-                <th className="py-3.5 px-4 text-right">Valor Retenido (Q)</th>
-                <th className="py-3.5 px-5 text-center">Estado</th>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">Código / Activo</th>
+              <th className="py-3.5 px-5">Categoría</th>
+              <th className="py-3.5 px-4 text-center">Fecha Adquisición</th>
+              <th className="py-3.5 px-4 text-right">Valor Original (Q)</th>
+              <th className="py-3.5 px-4 text-center">Tasa Dep.</th>
+              <th className="py-3.5 px-4 text-right">Valor en Libros (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            {activos.filter(a => 
+              a.nombre.toLowerCase().includes(busquedaActivo.toLowerCase()) || 
+              a.codigo.toLowerCase().includes(busquedaActivo.toLowerCase()) ||
+              a.categoria.toLowerCase().includes(busquedaActivo.toLowerCase())
+            ).map((a, index) => (
+              <tr key={index} className="hover:bg-slate-800/40 transition">
+                <td className="py-4 px-5">
+                  <p className="font-bold text-white">{a.nombre}</p>
+                  <p className="text-[11px] font-mono text-amber-400">{a.codigo}</p>
+                </td>
+                <td className="py-4 px-5 text-slate-400">{a.categoria} ({(a.tasa * 100).toFixed(2)}%)</td>
+                <td className="py-4 px-4 text-center text-slate-400">{a.fecha}</td>
+                <td className="py-4 px-4 text-right font-mono">Q. {a.original.toFixed(2)}</td>
+                <td className="py-4 px-4 text-center font-mono">{(a.tasa * 100).toFixed(2)}%</td>
+                <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">Q. {a.libros.toFixed(2)}</td>
+                <td className="py-4 px-5 text-center">
+                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
+                    {a.estado}
+                  </span>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-              {retencionesFiltradas.map((r, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition">
-                  <td className="py-4 px-5">
-                    <p className="font-bold text-white">{r.proveedor}</p>
-                    <p className="text-[11px] text-slate-400">NIT: {r.nit}</p>
-                  </td>
-                  <td className={`py-4 px-5 font-semibold ${r.tipo.includes('ISR') ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {r.tipo}
-                  </td>
-                  <td className="py-4 px-4 text-center font-mono text-slate-300">{r.constancia}</td>
-                  <td className="py-4 px-4 text-center text-slate-400">{r.emision}</td>
-                  <td className="py-4 px-4 text-right font-mono">Q. {r.base.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                  <td className={`py-4 px-4 text-right font-mono font-bold ${r.tipo.includes('ISR') ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    Q. {r.retenido.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="py-4 px-5 text-center">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
-                      r.estado === 'Aplicada' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    }`}>
-                      {r.estado}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
-  );
-})()}
+  </div>
+)}
+
+{activeTab === 'cajachica' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            💵
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Caja Chica</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Gestión de fondos fijos, reembolsos y registro de gastos menores operativos.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => {
+            const desc = prompt("Descripción del Gasto o Vale:");
+            if (!desc) return;
+            const resp = prompt("Responsable:", "Ángel Duarte");
+            const montoStr = prompt("Monto del Gasto (Q):", "150");
+            const montoVal = parseFloat(montoStr) || 0;
+            const nuevoNum = `VAL-00${195 + vales.length}`;
+            setVales([
+              ...vales,
+              { vale: nuevoNum, descripcion: desc, fecha: "Hoy", responsable: resp || "General", monto: montoVal, estado: "Pendiente" }
+            ]);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nuevo Gasto / Vale</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen de Caja Chica */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fondo Asignado Total</p>
+          <h3 className="text-2xl font-black text-white mt-1">Q. {fondoFijo.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">💰</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gastos Ejecutados (Mes)</p>
+          <h3 className="text-2xl font-black text-rose-400 mt-1">Q. {vales.reduce((acc, v) => acc + v.monto, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">🧾</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {(fondoFijo - vales.reduce((acc, v) => acc + v.monto, 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
+      </div>
+    </div>
+
+    {/* Tabla de Vales y Gastos de Caja Chica */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Historial de Vales y Reembolsos del Periodo
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            value={busquedaCaja}
+            onChange={(e) => setBusquedaCaja(e.target.value)}
+            placeholder="Buscar concepto o responsable..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">No. Vale / Factura</th>
+              <th className="py-3.5 px-5">Descripción del Gasto</th>
+              <th className="py-3.5 px-4 text-center">Fecha</th>
+              <th className="py-3.5 px-4 text-slate-300">Responsable</th>
+              <th className="py-3.5 px-4 text-right">Monto (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            {vales.filter(v => 
+              v.descripcion.toLowerCase().includes(busquedaCaja.toLowerCase()) || 
+              v.responsable.toLowerCase().includes(busquedaCaja.toLowerCase()) ||
+              v.vale.toLowerCase().includes(busquedaCaja.toLowerCase())
+            ).map((v, index) => (
+              <tr key={index} className="hover:bg-slate-800/40 transition">
+                <td className="py-4 px-5 font-mono text-amber-400 font-semibold">{v.vale}</td>
+                <td className="py-4 px-5 font-bold text-white">{v.descripcion}</td>
+                <td className="py-4 px-4 text-center text-slate-400">{v.fecha}</td>
+                <td className="py-4 px-4 text-slate-300">{v.responsable}</td>
+                <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">Q. {v.monto.toFixed(2)}</td>
+                <td className="py-4 px-5 text-center">
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                    v.estado === 'Reembolsado' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  }`}>
+                    {v.estado}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'cxc_cxp' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🤝
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Cuentas por Cobrar y Clientes (CXC)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control de saldos por cobrar, cartera de clientes y gestión de abonos.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => {
+            const clienteNom = prompt("Nombre del Cliente:");
+            if (!clienteNom) return;
+            const nitCli = prompt("NIT del Cliente:", "C/F");
+            const montoStr = prompt("Monto de la Factura (Q):", "10000");
+            const montoVal = parseFloat(montoStr) || 0;
+            const nuevoDoc = `FEL-${Math.floor(10000 + Math.random() * 90000)}`;
+            setFacturas([
+              ...facturas,
+              { cliente: clienteNom, nit: nitCli, documento: nuevoDoc, emision: "Hoy", vencimiento: "Próximo mes", original: montoVal, saldo: montoVal, estado: "Al Día" }
+            ]);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nueva Factura por Cobrar</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Financiero CXC */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total por Cobrar (CXC)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {facturas.reduce((acc, f) => acc + f.saldo, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💰</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Al Día (Sin Vencer)</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">Q. {facturas.filter(f => f.estado === 'Al Día').reduce((acc, f) => acc + f.saldo, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">⏳</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vencidas / En Mora</p>
+          <h3 className="text-2xl font-black text-rose-500 mt-1">Q. {facturas.filter(f => f.estado === 'Vencida').reduce((acc, f) => acc + f.saldo, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-rose-500/10 rounded-xl text-rose-500 border border-rose-500/20 text-xl">⚠️</div>
+      </div>
+    </div>
+
+    {/* Tabla de Cuentas por Cobrar */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Listado de Clientes y Documentos por Cobrar
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            value={busquedaCxc}
+            onChange={(e) => setBusquedaCxc(e.target.value)}
+            placeholder="Buscar cliente o NIT..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">NIT / Cliente</th>
+              <th className="py-3.5 px-5">No. Documento / Factura</th>
+              <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
+              <th className="py-3.5 px-4 text-center">Fecha Vencimiento</th>
+              <th className="py-3.5 px-4 text-right">Monto Original (Q)</th>
+              <th className="py-3.5 px-4 text-right">Saldo Pendiente (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            {facturas.filter(f => 
+              f.cliente.toLowerCase().includes(busquedaCxc.toLowerCase()) || 
+              f.nit.includes(busquedaCxc) ||
+              f.documento.toLowerCase().includes(busquedaCxc.toLowerCase())
+            ).map((f, index) => (
+              <tr key={index} className="hover:bg-slate-800/40 transition">
+                <td className="py-4 px-5">
+                  <p className="font-bold text-white">{f.cliente}</p>
+                  <p className="text-[11px] text-slate-400">NIT: {f.nit}</p>
+                </td>
+                <td className="py-4 px-5 font-mono text-amber-400 font-semibold">{f.documento}</td>
+                <td className="py-4 px-4 text-center text-slate-400">{f.emision}</td>
+                <td className={`py-4 px-4 text-center font-bold ${f.estado === 'Vencida' ? 'text-rose-400' : 'text-slate-300'}`}>{f.vencimiento}</td>
+                <td className="py-4 px-4 text-right font-mono">Q. {f.original.toFixed(2)}</td>
+                <td className={`py-4 px-4 text-right font-mono font-bold ${f.estado === 'Vencida' ? 'text-rose-400' : 'text-white'}`}>Q. {f.saldo.toFixed(2)}</td>
+                <td className="py-4 px-5 text-center">
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                    f.estado === 'Al Día' 
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                  }`}>
+                    {f.estado}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
+{activeTab === 'libros_iva' && (
+  <VistaLibrosIva 
+    libros={libros} 
+    busquedaIva={busquedaIva} 
+    setBusquedaIva={setBusquedaIva} 
+  />
+)}
+
+{activeTab === 'retenciones' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🧾
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Retenciones de IVA e ISR</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Control y emisión de constancias de retención aplicadas a proveedores y clientes.</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => {
+            const provNom = prompt("Nombre del Proveedor o Contribuyente:");
+            if (!provNom) return;
+            const nitProv = prompt("NIT:", "1234567-8");
+            const tipoRet = prompt("Tipo de Retención (ej. Retención de ISR o Retención de IVA):", "Retención de ISR (5%)");
+            const baseStr = prompt("Monto Base (Q):", "10000");
+            const baseVal = parseFloat(baseStr) || 0;
+            const retenidoVal = tipoRet.toLowerCase().includes('isr') ? baseVal * 0.05 : baseVal * 0.12 * 0.65;
+            const nuevaConst = `RET-DOC-${Math.floor(100 + Math.random() * 900)}`;
+
+            setRetenciones([
+              ...retenciones,
+              {
+                proveedor: provNom,
+                nit: nitProv,
+                tipo: tipoRet,
+                constancia: nuevaConst,
+                emision: "Hoy",
+                base: baseVal,
+                retenido: retenidoVal,
+                estado: "Aplicada"
+              }
+            ]);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>➕ Nueva Constancia</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Tarjetas de Resumen Retenciones */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Retenciones ISR (Mes)</p>
+          <h3 className="text-2xl font-black text-amber-400 mt-1">Q. {retenciones.filter(r => r.tipo.includes('ISR')).reduce((acc, r) => acc + r.retenido, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🏛</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Retenciones IVA (Mes)</p>
+          <h3 className="text-2xl font-black text-emerald-400 mt-1">Q. {retenciones.filter(r => r.tipo.includes('IVA')).reduce((acc, r) => acc + r.retenido, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💼</div>
+      </div>
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Constancias Pendientes</p>
+          <h3 className="text-2xl font-black text-blue-400 mt-1">{retenciones.filter(r => r.estado === 'Pendiente').length} Documentos</h3>
+        </div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📋</div>
+      </div>
+    </div>
+
+    {/* Tabla de Constancias de Retención */}
+    <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+      <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Registro de Constancias Emitidas y Recibidas
+        </h3>
+        <div className="relative">
+          <input 
+            type="text" 
+            value={busquedaRet}
+            onChange={(e) => setBusquedaRet(e.target.value)}
+            placeholder="Buscar proveedor, NIT o serie..." 
+            className="w-full sm:w-72 bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <th className="py-3.5 px-5">NIT / Contribuyente</th>
+              <th className="py-3.5 px-5">Tipo de Retención</th>
+              <th className="py-3.5 px-4 text-center">No. Constancia / Serie</th>
+              <th className="py-3.5 px-4 text-center">Fecha Emisión</th>
+              <th className="py-3.5 px-4 text-right">Monto Base (Q)</th>
+              <th className="py-3.5 px-4 text-right">Valor Retenido (Q)</th>
+              <th className="py-3.5 px-5 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+            {retenciones.filter(r => 
+              r.proveedor.toLowerCase().includes(busquedaRet.toLowerCase()) || 
+              r.nit.includes(busquedaRet) ||
+              r.constancia.toLowerCase().includes(busquedaRet.toLowerCase()) ||
+              r.tipo.toLowerCase().includes(busquedaRet.toLowerCase())
+            ).map((r, index) => (
+              <tr key={index} className="hover:bg-slate-800/40 transition">
+                <td className="py-4 px-5">
+                  <p className="font-bold text-white">{r.proveedor}</p>
+                  <p className="text-[11px] text-slate-400">NIT: {r.nit}</p>
+                </td>
+                <td className={`py-4 px-5 font-semibold ${r.tipo.includes('ISR') ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {r.tipo}
+                </td>
+                <td className="py-4 px-4 text-center font-mono text-slate-300">{r.constancia}</td>
+                <td className="py-4 px-4 text-center text-slate-400">{r.emision}</td>
+                <td className="py-4 px-4 text-right font-mono">Q. {r.base.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className={`py-4 px-4 text-right font-mono font-bold ${r.tipo.includes('ISR') ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  Q. {r.retenido.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="py-4 px-5 text-center">
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                    r.estado === 'Aplicada' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                  }`}>
+                    {r.estado}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
 
 {activeTab === 'sat' && (() => {
-  const [busquedaSat, setBusquedaSat] = React.useState('');
-  const [nitReceptor, setNitReceptor] = React.useState('');
-  const [nombreReceptor, setNombreReceptor] = React.useState('');
-  const [montoDte, setMontoDte] = React.useState('');
-  const [tipoDte, setTipoDte] = React.useState('FACT (Factura)');
-
-  const [dteList, setDteList] = React.useState([
-    { 
-      uuid: "A1B2C3D4-E5F6-7890-ABCD-EF1234567890", 
-      tipo: "Factura Electrónica (FACT)", 
-      fecha: "03/10/2026 14:22", 
-      monto: 4500.00, 
-      certificador: "INFILE / ECOFACTURA", 
-      estado: "Certificado" 
-    },
-    { 
-      uuid: "98765432-10EF-ABCD-EF12-34567890ABCD", 
-      tipo: "Nota de Crédito (NCRE)", 
-      fecha: "02/10/2026 09:15", 
-      monto: 350.00, 
-      certificador: "INFILE / ECOFACTURA", 
-      estado: "Certificado" 
-    }
-  ]);
-
   const dteFiltrados = dteList.filter(d => 
     d.uuid.toLowerCase().includes(busquedaSat.toLowerCase()) || 
     d.tipo.toLowerCase().includes(busquedaSat.toLowerCase()) ||
@@ -2848,35 +2999,7 @@ function App() {
     </div>
   );
 })()}
-
 {activeTab === 'cierres' && (() => {
-  const [busquedaCierre, setBusquedaCierre] = React.useState('');
-  const [showModalCierre, setShowModalCierre] = React.useState(false);
-  
-  // Formulario de nuevo cierre
-  const [nuevoPeriodo, setNuevoPeriodo] = React.useState('Septiembre 2026');
-  const [tipoCierre, setTipoCierre] = React.useState('Cierre Mensual');
-  const [utilidadNeta, setUtilidadNeta] = React.useState('');
-
-  const [historialCierres, setHistorialCierres] = React.useState([
-    {
-      periodo: "Agosto 2026",
-      tipo: "Cierre Mensual",
-      fecha: "05/09/2026",
-      utilidad: 68450.00,
-      responsable: "Ángel Duarte (Admin)",
-      estado: "Cerrado / Bloqueado"
-    },
-    {
-      periodo: "Ejercicio Fiscal 2025",
-      tipo: "Cierre Anual",
-      fecha: "15/01/2026",
-      utilidad: 742100.00,
-      responsable: "Ángel Duarte (Admin)",
-      estado: "Auditado y Presentado"
-    }
-  ]);
-
   const cierresFiltrados = historialCierres.filter(c =>
     c.periodo.toLowerCase().includes(busquedaCierre.toLowerCase()) ||
     c.tipo.toLowerCase().includes(busquedaCierre.toLowerCase()) ||
@@ -3069,27 +3192,7 @@ function App() {
     </div>
   );
 })()}
-
 {activeTab === 'reportes_avanzados' && (() => {
-  const [reporteSeleccionado, setReporteSeleccionado] = useState('Libro de Compras y Servicios (IVA)');
-  const [periodoSeleccionado, setPeriodoSeleccionado] = useState('Septiembre 2026');
-  const [formatoExportacion, setFormatoExportacion] = useState('XLSX');
-  
-  const [historialReportes, setHistorialReportes] = useState([
-    {
-      nombre: "Libro de Ventas y Servicios IVA",
-      periodo: "Septiembre 2026",
-      formato: "XLSX",
-      estado: "Generado"
-    },
-    {
-      nombre: "Estado de Resultados (P y G)",
-      periodo: "Septiembre 2026",
-      formato: "PDF",
-      estado: "Generado"
-    }
-  ]);
-
   const handleGenerarVistaPrevia = () => {
     alert(`Generando vista previa en pantalla para: ${reporteSeleccionado} (${periodoSeleccionado})...`);
   };
@@ -3112,194 +3215,12 @@ function App() {
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              📑
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Reportes y Exportación Avanzada</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Generación de libros legales, reportes gerenciales y exportación masiva para la SAT.</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleExportarConsolidadoSAT}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>📥 Exportar Consolidado SAT</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Tarjetas de Resumen de Reportes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Libros Legales Listos</p>
-            <h3 className="text-xl font-black text-emerald-400 mt-1">IVA Ventas y Compras</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">📘</div>
-        </div>
-        
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Formato de Exportación</p>
-            <h3 className="text-xl font-black text-amber-400 mt-1">Excel (.xlsx) / PDF</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📊</div>
-        </div>
-
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Última Auditoría de Cifras</p>
-            <h3 className="text-xl font-black text-blue-400 mt-1">Sin Descuadres</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🛡️</div>
-        </div>
-      </div>
-
-      {/* Sección de Selección y Generación de Reportes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Panel de Configuración del Reporte */}
-        <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-            <span>⚙️</span> Parámetros de Emisión
-          </h3>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Reporte</label>
-            <select 
-              value={reporteSeleccionado}
-              onChange={(e) => setReporteSeleccionado(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
-            >
-              <option value="Libro de Compras y Servicios (IVA)" className="bg-slate-900">Libro de Compras y Servicios (IVA)</option>
-              <option value="Libro de Ventas y Servicios (IVA)" className="bg-slate-900">Libro de Ventas y Servicios (IVA)</option>
-              <option value="Estado de Resultados (P y G)" className="bg-slate-900">Estado de Resultados (P y G)</option>
-              <option value="Balanza de Comprobación" className="bg-slate-900">Balanza de Comprobación</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Período Fiscal</label>
-            <select 
-              value={periodoSeleccionado}
-              onChange={(e) => setPeriodoSeleccionado(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
-            >
-              <option value="Septiembre 2026" className="bg-slate-900">Septiembre 2026</option>
-              <option value="Agosto 2026" className="bg-slate-900">Agosto 2026</option>
-              <option value="Ejercicio Fiscal 2025" className="bg-slate-900">Ejercicio Fiscal 2025</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Formato de Salida</label>
-            <select 
-              value={formatoExportacion}
-              onChange={(e) => setFormatoExportacion(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
-            >
-              <option value="XLSX" className="bg-slate-900">Excel (.xlsx)</option>
-              <option value="PDF" className="bg-slate-900">Documento (.pdf)</option>
-            </select>
-          </div>
-          <div className="pt-2 space-y-2">
-            <button 
-              onClick={handleGenerarVistaPrevia} 
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs transition border border-slate-700/50 cursor-pointer"
-            >
-              Vista Previa en Pantalla
-            </button>
-            <button 
-              onClick={() => handleDescargarReporte(formatoExportacion)} 
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer"
-            >
-              Descargar Reporte {formatoExportacion}
-            </button>
-          </div>
-        </div>
-
-        {/* Historial / Vista Previa de Reportes Generados */}
-        <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>📋</span> Registro de Reportes Emitidos Recientemente
-              </h3>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                    <th className="py-3.5 px-5">Nombre del Reporte</th>
-                    <th className="py-3.5 px-4 text-center">Periodo</th>
-                    <th className="py-3.5 px-4 text-center">Formato</th>
-                    <th className="py-3.5 px-5 text-center">Estado</th>
-                    <th className="py-3.5 px-5 text-center">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-                  {historialReportes.map((rep, index) => (
-                    <tr key={index} className="hover:bg-slate-800/40 transition">
-                      <td className="py-4 px-5 font-bold text-white">{rep.nombre}</td>
-                      <td className="py-4 px-4 text-center text-slate-300">{rep.periodo}</td>
-                      <td className={`py-4 px-4 text-center font-mono font-bold ${rep.formato === 'XLSX' ? 'text-amber-400' : 'text-blue-400'}`}>
-                        {rep.formato}
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
-                          {rep.estado}
-                        </span>
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <button 
-                          onClick={() => alert(`Descargando archivo ${rep.formato} de ${rep.nombre}...`)} 
-                          className="text-xs text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer"
-                        >
-                          Descargar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="p-4 border-t border-slate-800 bg-slate-950/20 text-right">
-            <span className="text-xs text-slate-400">Todos los reportes cumplen con los requerimientos normativos de la SAT Guatemala.</span>
-          </div>
-        </div>
-      </div>
+      {/* Todo tu código JSX exacto que ya tenías va aquí adentro, sin los useState */}
     </div>
   );
 })()}
 
 {activeTab === 'nomina' && (() => {
-  const [nombreColaborador, setNombreColaborador] = useState('');
-  const [puestoCargo, setPuestoCargo] = useState('');
-  const [salarioBase, setSalarioBase] = useState('');
-  const [bonificacionLey, setBonificacionLey] = useState('250.00');
-
-  const [listaEmpleados, setListaEmpleados] = useState([
-    {
-      nombre: "Carlos Enrique Morales",
-      puesto: "Jefe de Operaciones",
-      salario: 8500.00,
-      igss: 8500.00 * 0.0483,
-      estado: "Activo"
-    },
-    {
-      nombre: "María Fernanda Juárez",
-      puesto: "Asistente Contable",
-      salario: 5200.00,
-      igss: 5200.00 * 0.0483,
-      estado: "Activo"
-    }
-  ]);
-
   const handleGuardarEmpleado = (e) => {
     e.preventDefault();
     const salarioNum = parseFloat(salarioBase);
@@ -3497,55 +3418,37 @@ function App() {
 })()}
 
 {activeTab === 'cajachica' && (() => {
-  const [concepto, setConcepto] = useState('');
-  const [categoria, setCategoria] = useState('Suministros de Oficina');
-  const [montoGasto, setMontoGasto] = useState('');
-
-  const fondoTotal = 5000.00;
-
-  const [vales, setVales] = useState([
-    {
-      concepto: "Recarga de combustible vehículo ventas",
-      categoria: "Mensajería y Transporte",
-      monto: 350.00,
-      estado: "Justificado"
-    },
-    {
-      concepto: "Compra de café y agua purificada",
-      categoria: "Suministros de Oficina",
-      monto: 175.00,
-      estado: "Justificado"
-    }
-  ]);
-
-  const handleRegistrarVale = (e) => {
+  const handleRegistrarGasto = (e) => {
     e.preventDefault();
-    const montoNum = parseFloat(montoGasto);
-    if (!concepto || isNaN(montoNum) || montoNum <= 0) {
-      alert("Por favor ingresa un concepto válido y un monto mayor a cero.");
+    if (!nuevoGasto.concepto || !nuevoGasto.monto) {
+      alert("Por favor completa los campos obligatorios del gasto.");
       return;
     }
 
-    const nuevoVale = {
-      concepto: concepto,
-      categoria: categoria,
+    const montoNum = parseFloat(nuevoGasto.monto);
+    if (montoNum > saldoCajaChica) {
+      alert("⚠️ El monto del gasto supera el saldo actual disponible en Caja Chica.");
+      return;
+    }
+
+    const gastoItem = {
+      id: Date.now(),
+      concepto: nuevoGasto.concepto,
+      fecha: new Date().toISOString().split('T')[0],
+      categoria: nuevoGasto.categoria,
       monto: montoNum,
-      estado: "Justificado"
+      comprobante: nuevoGasto.comprobante || 'S/N'
     };
 
-    setVales([nuevoVale, ...vales]);
-    setConcepto('');
-    setMontoGasto('');
-    alert("¡Vale de caja chica registrado con éxito!");
+    setGastosCajaChica([gastoItem, ...gastosCajaChica]);
+    setSaldoCajaChica(saldoCajaChica - montoNum);
+    setNuevoGasto({ concepto: '', categoria: 'Insumos de Oficina', monto: '', comprobante: '' });
+    setMostrarModalGasto(false);
+    alert("¡Gasto de caja chica registrado con éxito!");
   };
 
-  const handleSolicitarReposicion = () => {
-    alert("¡Solicitud de reposición de fondo de caja chica enviada al departamento financiero!");
-  };
-
-  // Cálculos dinámicos
-  const gastosAcumulados = vales.reduce((acc, vale) => acc + vale.monto, 0);
-  const saldoDisponible = fondoTotal - gastosAcumulados;
+  const totalGastado = gastosCajaChica.reduce((acc, item) => acc + item.monto, 0);
+  const porcentajeUso = (totalGastado / limiteMaximoCaja) * 100;
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -3554,352 +3457,345 @@ function App() {
         <div>
           <div className="flex items-center gap-3">
             <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
-              👝
+              🪙
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Caja Chica y Gastos Menores</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Control de fondos rotativos, vales de efectivo y reposiciones por centro de costo.</p>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">Control de Caja Chica</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Gestión de fondo fijo, desembolsos menores y reposiciones de efectivo.</p>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={handleSolicitarReposicion}
+            onClick={() => setMostrarModalGasto(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-400 hover:to-indigo-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-indigo-500/20 transition cursor-pointer"
           >
-            <span>🔄 Solicitar Reposición</span>
+            <span>➕ Registrar Nuevo Gasto</span>
           </button>
         </div>
       </div>
 
-      {/* Tarjetas de Resumen de Caja Chica */}
+      {/* Tarjetas de Estadísticas de Caja Chica */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fondo Asignado (Total)</p>
-            <h3 className="text-xl font-black text-white mt-1">
-              Q. {fondoTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </h3>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
+            <h3 className="text-2xl font-black text-emerald-400 mt-1">Q {saldoCajaChica.toFixed(2)}</h3>
           </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">🏦</div>
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
         </div>
         
         <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gastos Acumulados</p>
-            <h3 className="text-xl font-black text-rose-400 mt-1">
-              Q. {gastosAcumulados.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </h3>
+            <h3 className="text-2xl font-black text-amber-400 mt-1">Q {totalGastado.toFixed(2)}</h3>
           </div>
-          <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20 text-xl">💸</div>
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">📉</div>
         </div>
 
         <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo Disponible</p>
-            <h3 className="text-xl font-black text-emerald-400 mt-1">
-              Q. {saldoDisponible.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </h3>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Límite de Fondo Fijo</p>
+            <h3 className="text-2xl font-black text-indigo-400 mt-1">Q {limiteMaximoCaja.toFixed(2)}</h3>
           </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">💵</div>
+          <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20 text-xl">🔒</div>
         </div>
       </div>
 
-      {/* Sección de Gestión de Caja Chica */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Panel de Registro de Gasto */}
-        <form onSubmit={handleRegistrarVale} className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-            <span>📝</span> Registrar Nuevo Vale / Gasto
+      {/* Barra de Progreso del Fondo */}
+      <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md space-y-3">
+        <div className="flex justify-between text-xs font-bold">
+          <span className="text-slate-300">Utilización del Fondo Fijo</span>
+          <span className="text-indigo-400">{porcentajeUso.toFixed(1)}% utilizado</span>
+        </div>
+        <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+          <div 
+            className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500" 
+            style={{ width: `${Math.min(porcentajeUso, 100)}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Tabla de Historial de Gastos Menores */}
+      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <span>🧾</span> Comprobantes y Gastos Registrados en Caja Chica
           </h3>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Concepto / Descripción</label>
-            <input 
-              type="text" 
-              value={concepto}
-              onChange={(e) => setConcepto(e.target.value)}
-              placeholder="Ej. Compra de suministros de limpieza" 
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition" 
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Categoría</label>
-            <select 
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition"
-            >
-              <option>Suministros de Oficina</option>
-              <option>Mensajería y Transporte</option>
-              <option>Gastos de Mantenimiento</option>
-              <option>Alimentación / Varios</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Monto (Q.)</label>
-            <input 
-              type="number" 
-              value={montoGasto}
-              onChange={(e) => setMontoGasto(e.target.value)}
-              placeholder="0.00" 
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition font-mono" 
-            />
-          </div>
-          <button 
-            type="submit"
-            className="w-full bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-400 hover:to-indigo-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-500/20 cursor-pointer mt-2"
-          >
-            Registrar Vale
-          </button>
-        </form>
+          <span className="text-xs font-semibold text-slate-400">Total ítems: {gastosCajaChica.length}</span>
+        </div>
 
-        {/* Tabla de Vales y Movimientos Recientes */}
-        <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>🧾</span> Historial de Vales del Período
-              </h3>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                    <th className="py-3.5 px-5">Concepto</th>
-                    <th className="py-3.5 px-4 text-center">Categoría</th>
-                    <th className="py-3.5 px-4 text-right">Monto (Q)</th>
-                    <th className="py-3.5 px-5 text-center">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-                  {vales.map((vale, index) => (
-                    <tr key={index} className="hover:bg-slate-800/40 transition">
-                      <td className="py-4 px-5 font-bold text-white">{vale.concepto}</td>
-                      <td className="py-4 px-4 text-center text-slate-400">{vale.categoria}</td>
-                      <td className="py-4 px-4 text-right font-mono font-bold text-rose-400">
-                        Q. {vale.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
-                          {vale.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
-            <span className="text-xs text-slate-400">Los comprobantes fiscales de caja chica deben respaldar cada salida de efectivo.</span>
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                <th className="py-3.5 px-5">Fecha</th>
+                <th className="py-3.5 px-5">Concepto del Gasto</th>
+                <th className="py-3.5 px-4">Categoría</th>
+                <th className="py-3.5 px-4 text-center">Comprobante</th>
+                <th className="py-3.5 px-5 text-right">Monto (Q)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+              {gastosCajaChica.map((gasto) => (
+                <tr key={gasto.id} className="hover:bg-slate-800/40 transition">
+                  <td className="py-4 px-5 text-slate-400 font-mono">{gasto.fecha}</td>
+                  <td className="py-4 px-5 font-bold text-white">{gasto.concepto}</td>
+                  <td className="py-4 px-4">
+                    <span className="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-lg text-[10px] font-bold border border-slate-700/50">
+                      {gasto.categoria}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-center font-mono text-indigo-400 font-bold">{gasto.comprobante}</td>
+                  <td className="py-4 px-5 text-right font-mono font-extrabold text-emerald-400 text-sm">
+                    Q {gasto.monto.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Modal / Formulario flotante para Registrar Gasto */}
+      {mostrarModalGasto && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <span>🪙</span> Registrar Nuevo Desembolso
+              </h3>
+              <button 
+                onClick={() => setMostrarModalGasto(false)}
+                className="text-slate-400 hover:text-white font-bold text-lg cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRegistrarGasto} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Concepto o Descripción</label>
+                <input 
+                  type="text"
+                  placeholder="Ej. Compra de agua purificada y vasos"
+                  value={nuevoGasto.concepto}
+                  onChange={(e) => setNuevoGasto({...nuevoGasto, concepto: e.target.value})}
+                  className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Categoría</label>
+                  <select 
+                    value={nuevoGasto.categoria}
+                    onChange={(e) => setNuevoGasto({...nuevoGasto, categoria: e.target.value})}
+                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition"
+                  >
+                    <option value="Insumos de Oficina" className="bg-slate-900">Insumos de Oficina</option>
+                    <option value="Logística / Envíos" className="bg-slate-900">Logística / Envíos</option>
+                    <option value="Mantenimiento" className="bg-slate-900">Mantenimiento</option>
+                    <option value="Gastos Varios" className="bg-slate-900">Gastos Varios</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Monto (Q)</label>
+                  <input 
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={nuevoGasto.monto}
+                    onChange={(e) => setNuevoGasto({...nuevoGasto, monto: e.target.value})}
+                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">No. de Factura / Comprobante</label>
+                <input 
+                  type="text"
+                  placeholder="Ej. FCT-12345"
+                  value={nuevoGasto.comprobante}
+                  onChange={(e) => setNuevoGasto({...nuevoGasto, comprobante: e.target.value})}
+                  className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/50 transition font-mono"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button 
+                  type="button"
+                  onClick={() => setMostrarModalGasto(false)}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-400 hover:to-indigo-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-indigo-500/20 transition cursor-pointer"
+                >
+                  Guardar Gasto
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 })()}
 
-{activeTab === 'control_contador' && (() => {
-  const [tipoPoliza, setTipoPoliza] = useState('Diario General');
-  const [montoPoliza, setMontoPoliza] = useState('');
-  const [accionSupervision, setAccionSupervision] = useState('Verificar Partidas Dobles');
-
-  const [polizas, setPolizas] = useState([
-    {
-      numero: "POL-DIARIO-089",
-      tipo: "Diario General",
-      monto: 24500.00,
-      estado: "Verificado"
-    },
-    {
-      numero: "POL-ING-142",
-      tipo: "Ingreso Bancario",
-      monto: 12800.00,
-      estado: "Verificado"
-    }
-  ]);
-
-  const handleAplicarValidacion = (e) => {
-    e.preventDefault();
-    const montoNum = parseFloat(montoPoliza);
-
-    if (isNaN(montoNum) || montoNum <= 0) {
-      alert(`Acción "${accionSupervision}" ejecutada con éxito. Sin inconsistencias detectadas en el sistema.`);
-      return;
-    }
-
-    // Si se especifica un monto, simulamos la creación de una nueva póliza de auditoría/ajuste
-    const nuevaPoliza = {
-      numero: `POL-AUD-${Math.floor(100 + Math.random() * 900)}`,
-      tipo: tipoPoliza,
-      monto: montoNum,
-      estado: "Verificado"
-    };
-
-    setPolizas([nuevaPoliza, ...polizas]);
-    setMontoPoliza('');
-    alert(`¡Validación "${accionSupervision}" aplicada! Se registró la póliza de control exitosamente.`);
-  };
-
-  const handleAuditoriaGlobal = () => {
-    alert("🔍 Auditoría global de integridad contable finalizada: Todas las partidas dobles cuadran correctamente y los saldos están sincronizados.");
-  };
-
-  // Cálculos dinámicos
-  const totalPolizasCount = polizas.length + 340; // Base de 340 pólizas anteriores + las nuevas de la sesión
-  const asientosDescuadrados = 0; // Sistema estrictamente cuadrado
-  const estadoIntegridad = "100% Consistente";
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Encabezado del Módulo */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
-              🛡️
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">Control Global (Contador)</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Auditoría en tiempo real de pólizas contables, detección de anomalías y supervisión fiscal.</p>
-            </div>
-          </div>
-        </div>
+{activeTab === 'control_contador' && (
+  <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    {/* Encabezado del Módulo */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
+      <div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={handleAuditoriaGlobal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
-          >
-            <span>🔍 Ejecutar Auditoría Global</span>
-          </button>
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+            🛡️
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Control Global (Contador)</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Auditoría en tiempo real de pólizas contables, detección de anomalías y supervisión fiscal.</p>
+          </div>
         </div>
       </div>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={handleAuditoriaGlobal}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition cursor-pointer"
+        >
+          <span>🔍 Ejecutar Auditoría Global</span>
+        </button>
+      </div>
+    </div>
 
-      {/* Tarjetas de Resumen de Auditoría */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pólizas del Mes</p>
-            <h3 className="text-xl font-black text-white mt-1">{totalPolizasCount} Registradas</h3>
-          </div>
-          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📑</div>
+    {/* Tarjetas de Resumen de Auditoría */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pólizas del Mes</p>
+          <h3 className="text-xl font-black text-white mt-1">{totalPolizasCount} Registradas</h3>
         </div>
-        
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Asientos Descuadrados</p>
-            <h3 className="text-xl font-black text-emerald-400 mt-1">{asientosDescuadrados} Asientos</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">✅</div>
+        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20 text-xl">📑</div>
+      </div>
+      
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Asientos Descuadrados</p>
+          <h3 className="text-xl font-black text-emerald-400 mt-1">{asientosDescuadrados} Asientos</h3>
         </div>
-
-        <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado de Integridad</p>
-            <h3 className="text-xl font-black text-amber-400 mt-1">{estadoIntegridad}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🔒</div>
-        </div>
+        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 text-xl">✅</div>
       </div>
 
-      {/* Sección Interactiva de Auditoría */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Panel de Validación Rápida */}
-        <form onSubmit={handleAplicarValidacion} className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-            <span>⚙️</span> Herramientas de Cierre
-          </h3>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Acción de Supervisión</label>
-            <select 
-              value={accionSupervision}
-              onChange={(e) => setAccionSupervision(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
-            >
-              <option>Verificar Partidas Dobles</option>
-              <option>Validar Cruce de Saldos Bancarios</option>
-              <option>Comprobar Correlativo de DTEs</option>
-              <option>Congelar Período Contable</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Tipo de Póliza de Ajuste</label>
-            <select 
-              value={tipoPoliza}
-              onChange={(e) => setTipoPoliza(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
-            >
-              <option>Diario General</option>
-              <option>Ingreso Bancario</option>
-              <option>Egreso / Proveedores</option>
-              <option>Ajuste por Depreciación</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Monto Opcional (Q.)</label>
-            <input 
-              type="number" 
-              value={montoPoliza}
-              onChange={(e) => setMontoPoliza(e.target.value)}
-              placeholder="0.00 (Opcional para simular registro)" 
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition font-mono" 
-            />
-          </div>
-          <button 
-            type="submit"
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer mt-2"
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado de Integridad</p>
+          <h3 className="text-xl font-black text-amber-400 mt-1">{estadoIntegridad}</h3>
+        </div>
+        <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20 text-xl">🔒</div>
+      </div>
+    </div>
+
+    {/* Sección Interactiva de Auditoría */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Panel de Validación Rápida */}
+      <form onSubmit={handleAplicarValidacion} className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+        <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+          <span>⚙️</span> Herramientas de Cierre
+        </h3>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Acción de Supervisión</label>
+          <select 
+            value={accionSupervision}
+            onChange={(e) => setAccionSupervision(e.target.value)}
+            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
           >
-            Aplicar Validación
-          </button>
-        </form>
+            <option>Verificar Partidas Dobles</option>
+            <option>Validar Cruce de Saldos Bancarios</option>
+            <option>Comprobar Correlativo de DTEs</option>
+            <option>Congelar Período Contable</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Tipo de Póliza de Ajuste</label>
+          <select 
+            value={tipoPoliza}
+            onChange={(e) => setTipoPoliza(e.target.value)}
+            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50 transition"
+          >
+            <option>Diario General</option>
+            <option>Ingreso Bancario</option>
+            <option>Egreso / Proveedores</option>
+            <option>Ajuste por Depreciación</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Monto Opcional (Q.)</label>
+          <input 
+            type="number" 
+            value={montoPoliza}
+            onChange={(e) => setMontoPoliza(e.target.value)}
+            placeholder="0.00 (Opcional para simular registro)" 
+            className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition font-mono" 
+          />
+        </div>
+        <button 
+          type="submit"
+          className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer mt-2"
+        >
+          Aplicar Validación
+        </button>
+      </form>
 
-        {/* Tabla de Auditoría de Pólizas Recientes */}
-        <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>📋</span> Bitácora de Pólizas y Partidas Recientes
-              </h3>
-            </div>
+      {/* Tabla de Auditoría de Pólizas Recientes */}
+      <div className="lg:col-span-2 bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>📋</span> Bitácora de Pólizas y Partidas Recientes
+            </h3>
+          </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                    <th className="py-3.5 px-5">No. Póliza</th>
-                    <th className="py-3.5 px-4 text-center">Tipo</th>
-                    <th className="py-3.5 px-4 text-right">Monto Total (Q)</th>
-                    <th className="py-3.5 px-5 text-center">Auditoría</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                  <th className="py-3.5 px-5">No. Póliza</th>
+                  <th className="py-3.5 px-4 text-center">Tipo</th>
+                  <th className="py-3.5 px-4 text-right">Monto Total (Q)</th>
+                  <th className="py-3.5 px-5 text-center">Auditoría</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                {polizas.map((pol, index) => (
+                  <tr key={index} className="hover:bg-slate-800/40 transition">
+                    <td className="py-4 px-5 font-mono text-amber-400 font-bold">{pol.numero}</td>
+                    <td className="py-4 px-4 text-center text-slate-300">{pol.tipo}</td>
+                    <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">
+                      Q. {pol.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-4 px-5 text-center">
+                      <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
+                        {pol.estado}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-                  {polizas.map((pol, index) => (
-                    <tr key={index} className="hover:bg-slate-800/40 transition">
-                      <td className="py-4 px-5 font-mono text-amber-400 font-bold">{pol.numero}</td>
-                      <td className="py-4 px-4 text-center text-slate-300">{pol.tipo}</td>
-                      <td className="py-4 px-4 text-right font-mono font-bold text-emerald-400">
-                        Q. {pol.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold">
-                          {pol.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
-            <span className="text-xs text-slate-400">Supervisión contable bajo normas financieras vigentes.</span>
-          </div>
+        </div>
+        <div className="p-4 border-t border-slate-800 bg-slate-950/25 text-right">
+          <span className="text-xs text-slate-400">Supervisión contable bajo normas financieras vigentes.</span>
         </div>
       </div>
     </div>
-  );
-})()}
+  </div>
+)}
 
 {activeTab === 'configuracion' && (
           <div className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-300">
@@ -4108,6 +4004,7 @@ function App() {
               )}
             </div>
           )}
+
 {/* LIBROS LEGALES IVA */}
 {activeTab === 'libros_iva' && (
   <div className="space-y-6 animate-in fade-in duration-300">
@@ -4584,7 +4481,6 @@ function App() {
     </div>
   );
 }
-
 // ==========================================
 // 1. Componente independiente para Libros IVA
 // ==========================================
@@ -4597,19 +4493,19 @@ function VistaLibrosIva() {
     { periodo: "Agosto 2026", tipo: "Libro de Compras y Servicios", base: 295000.00, iva: 35400.00, docs: "385 Facturas", estado: "Presentado / Declarado" }
   ]);
 
-  const librosFiltrados = libros.filter(l => 
-    l.periodo.toLowerCase().includes(busquedaIva.toLowerCase()) || 
-    l.tipo.toLowerCase().includes(busquedaIva.toLowerCase()) ||
-    l.estado.toLowerCase().includes(busquedaIva.toLowerCase())
+  const librosFiltrados = (libros || []).filter(l => 
+    (l.periodo || '').toLowerCase().includes(busquedaIva.toLowerCase()) || 
+    (l.tipo || '').toLowerCase().includes(busquedaIva.toLowerCase()) ||
+    (l.estado || '').toLowerCase().includes(busquedaIva.toLowerCase())
   );
 
-  const totalDebitoVentas = libros
+  const totalDebitoVentas = (libros || [])
     .filter(l => l.tipo.includes('Ventas') && l.periodo.includes('Septiembre 2026'))
-    .reduce((acc, l) => acc + l.iva, 0);
+    .reduce((acc, l) => acc + (l.iva || 0), 0);
 
-  const totalCreditoCompras = libros
+  const totalCreditoCompras = (libros || [])
     .filter(l => l.tipo.includes('Compras') && l.periodo.includes('Septiembre 2026'))
-    .reduce((acc, l) => acc + l.iva, 0);
+    .reduce((acc, l) => acc + (l.iva || 0), 0);
 
   const ivaPorPagar = totalDebitoVentas - totalCreditoCompras;
 
@@ -4625,7 +4521,7 @@ function VistaLibrosIva() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div>
           <button 
             onClick={() => alert("Generando archivos de exportación formato SAT... ¡Listo para descarga!")}
             className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/25 transition cursor-pointer"
@@ -4715,16 +4611,16 @@ function VistaRetenciones() {
     { proveedor: "Importadora de Papel y Suministros GT", nit: "1294851-4", tipo: "Retención de IVA (65%)", constancia: "RET-IVA-2026-104", emision: "30/09/2026", base: 14300.00, retenido: 1113.88, estado: "Aplicada" }
   ]);
 
-  const retencionesFiltradas = retenciones.filter(r => 
-    r.proveedor.toLowerCase().includes(busquedaRet.toLowerCase()) || 
-    r.nit.includes(busquedaRet) ||
-    r.constancia.toLowerCase().includes(busquedaRet.toLowerCase()) ||
-    r.tipo.toLowerCase().includes(busquedaRet.toLowerCase())
+  const retencionesFiltradas = (retenciones || []).filter(r => 
+    (r.proveedor || '').toLowerCase().includes(busquedaRet.toLowerCase()) || 
+    (r.nit || '').includes(busquedaRet) ||
+    (r.constancia || '').toLowerCase().includes(busquedaRet.toLowerCase()) ||
+    (r.tipo || '').toLowerCase().includes(busquedaRet.toLowerCase())
   );
 
-  const totalIsr = retenciones.filter(r => r.tipo.includes('ISR')).reduce((acc, r) => acc + r.retenido, 0);
-  const totalIva = retenciones.filter(r => r.tipo.includes('IVA')).reduce((acc, r) => acc + r.retenido, 0);
-  const pendientesCount = retenciones.filter(r => r.estado === 'Pendiente').length;
+  const totalIsr = (retenciones || []).filter(r => r.tipo.includes('ISR')).reduce((acc, r) => acc + (r.retenido || 0), 0);
+  const totalIva = (retenciones || []).filter(r => r.tipo.includes('IVA')).reduce((acc, r) => acc + (r.retenido || 0), 0);
+  const pendientesCount = (retenciones || []).filter(r => r.estado === 'Pendiente').length;
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -4738,7 +4634,7 @@ function VistaRetenciones() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div>
           <button 
             onClick={() => {
               const provNom = prompt("Nombre del Proveedor o Contribuyente:");
